@@ -345,6 +345,69 @@ public final class SpatialUtil {
     }
 
 
+    public static String getUserDataKeyStartsWith(Spatial spatial, final String name) {
+        Collection<String> keys = spatial.getUserDataKeys();
+
+        if(keys != null && !keys.isEmpty()) {
+            for (String key : keys) {
+                if(key.startsWith(name)) {
+                    return key;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static <T> T getUserDataStartsWith(Spatial spatial, final String name) {
+        Collection<String> keys = spatial.getUserDataKeys();
+
+        if(keys != null && !keys.isEmpty()) {
+            for (String key : keys) {
+                if(key.startsWith(name)) {
+                    return spatial.getUserData(key);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static List<Spatial> findAllWithDataStartsWith(Spatial spatial, final String name, List<Spatial> storeList, boolean nested) {
+        if(spatial != null) {
+            Collection<String> keys = spatial.getUserDataKeys();
+            if(keys != null && !keys.isEmpty()) {
+                for(String key : keys) {
+                    if(key.startsWith(name)) {
+                        storeList.add(spatial);
+                        if(!nested) {
+                            return storeList;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+            }
+
+            if(spatial instanceof Node) {
+                return findAllWithDataStartsWith((Node) spatial, name, storeList, nested);
+            }
+        }
+
+        return storeList;
+    }
+
+    public static List<Spatial> findAllWithDataStartsWith(Node node, final String name, List<Spatial> storeList, boolean nested) {
+        for (Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
+            findAllWithDataStartsWith(child, name, storeList, nested);
+        }
+
+        return storeList;
+    }
+
+
+
 
     public static Geometry findGeometryStartsWith(Spatial spatial, final String name) {
         if(spatial != null) {
