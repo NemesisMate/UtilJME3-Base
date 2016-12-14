@@ -443,6 +443,21 @@ public final class SpatialUtil {
     }
 
 
+
+    public static Spatial findHasUserData(Node node, final String key) {
+        if(node != null) {
+            for(Spatial spatial : node.getChildren()) {
+                Spatial found = findHasUserData(spatial, key);
+                if(found != null) {
+                    return found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
     public static Spatial findHasUserData(Spatial spatial, final String key) {
         if(spatial != null) {
             if(spatial.getUserData(key) != null) {
