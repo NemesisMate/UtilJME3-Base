@@ -359,6 +359,25 @@ public final class SpatialUtil {
         return null;
     }
 
+
+    public static <T> Collection<T> getAllUserDataStartsWith(Spatial spatial, final String name) {
+        Collection<String> keys = spatial.getUserDataKeys();
+
+        if(keys != null && !keys.isEmpty()) {
+            Collection<T> userDatas = new ArrayList<T>(keys.size());
+
+            for (String key : keys) {
+                if(key.startsWith(name)) {
+                    userDatas.add(spatial.getUserData(key));
+                }
+            }
+
+            return userDatas;
+        }
+
+        return null;
+    }
+
     public static <T> T getUserDataStartsWith(Spatial spatial, final String name) {
         Collection<String> keys = spatial.getUserDataKeys();
 
@@ -1032,5 +1051,19 @@ public final class SpatialUtil {
                 }
             }
         });
+    }
+
+    public static boolean hasGeometry(Spatial spatial) {
+        if(spatial instanceof Node) {
+            for(Spatial s : ((Node) spatial).getChildren()) {
+                if(hasGeometry(s)) {
+                    return true;
+                }
+            }
+        } else {
+            return true;
+        }
+
+        return false;
     }
 }

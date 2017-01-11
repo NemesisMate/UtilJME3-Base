@@ -188,8 +188,8 @@ public final class MergeUtil {
         List<Geometry> geoms = Arrays.asList(geometries);
 
 //        // Not added to a node to not dettach from their parents and, so, do not mutate the original things.
-//        for(Spatial task : spatials) {
-//            GeometryBatchFactory.gatherGeoms(task, geometries);
+//        for(Spatial spatial : spatials) {
+//            GeometryBatchFactory.gatherGeoms(spatial, geometries);
 //        }
 
         return mergeSpatialsWithAnimations(assetManager, replaceBoneDups, geoms, boneLinks);
@@ -604,7 +604,7 @@ public final class MergeUtil {
             if(skeletonSpatial != null) {
                 skeletonOffsets[i] = skeletonSpatial.getWorldTranslation();
             } else {
-                LoggerFactory.getLogger(MergeUtil.class).trace("Merged skeleton control without task: {}", skeletonControl);
+                LoggerFactory.getLogger(MergeUtil.class).trace("Merged skeleton control without spatial: {}", skeletonControl);
             }
 
             i++;
@@ -701,6 +701,8 @@ public final class MergeUtil {
                 bufferSize = numComponents * vertexBuffer.getNumElements();
 
 
+                LoggerFactory.getLogger(MergeUtil.class).debug("Offset: {}, GeometryMeshAssoc: {}, mesh: {}, obtained: {}, SkeletonControl's Spatial: {}", currentBindPoseOffset, geometryMeshAssoc, mesh, geometryMeshAssoc.get(mesh), skeletonControl.getSpatial());
+                // If this throws a NPE is more likely because of the skeleton is having a wrong mesh (a mesh that isn't in the spatial being merged)
                 currentBindPoseOffset.set(geometryMeshAssoc.get(mesh).getWorldTranslation());
 //                currentBindPoseOffset.set(geom.getWorldTranslation());
                 FloatBuffer floatData = toMesh.getFloatBuffer(VertexBuffer.Type.BindPosePosition);
