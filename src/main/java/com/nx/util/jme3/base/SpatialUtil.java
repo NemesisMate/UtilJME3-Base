@@ -26,7 +26,7 @@ import java.util.*;
 import static com.nx.util.jme3.base.DebugUtil.assetManager;
 
 /**
- *
+ * TODO: merge all duplicated methods (they can be handled in a single one without any performance impact. Doubling them is just useless... I think.)
  * @author NemesisMate
  */
 public final class SpatialUtil {
@@ -225,6 +225,24 @@ public final class SpatialUtil {
 
         return finalBounds;
     }
+
+    public static boolean isChild(Spatial child, Spatial parent) {
+        if(child == parent) {
+            return true;
+        }
+
+        if(parent instanceof Node) {
+            for (Spatial c : (((SafeArrayList<Spatial>)((Node)parent).getChildren()).getArray())) {
+                if(isChild(child, c)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
+
 
     /**
      * Finds a task on the given task (usually, a node).
