@@ -89,7 +89,7 @@ public final class SpatialUtil {
         
         List<Spatial> spatials = new ArrayList<>();
         //Map<Spatial, Integer> repeated = new HashMap<>();
-        List<String> lines = sceneGraphLoop(((Node)spatial).getChildren(), spatials, "", new ArrayList<>());
+        List<String> lines = sceneGraphLoop(((Node)spatial).getChildren(), spatials, "", new ArrayList<String>());
 
         for(String line : lines) {
             System.out.println(line);
@@ -112,8 +112,8 @@ public final class SpatialUtil {
     }
 
     //TODO
-    public static List<String> getDrawGraph(Spatial spatial) {
-        return sceneGraphLoop(new ArrayList<Spatial>(1) {{ add(spatial); }}, new ArrayList<>(), "", new ArrayList<>());
+    public static List<String> getDrawGraph(final Spatial spatial) {
+        return sceneGraphLoop(new ArrayList<Spatial>(1) {{ add(spatial); }}, new ArrayList<Spatial>(), "", new ArrayList<String>());
     }
     
     private static List<String> sceneGraphLoop(List<Spatial> spatials, List<Spatial> all, String dashes, List<String> lines) {
@@ -171,7 +171,7 @@ public final class SpatialUtil {
     }
 
     public static Node getAllBounds(Spatial spatial) {
-        Node bounds = new Node(spatial.getName() + "_BOUNDS");
+        final Node bounds = new Node(spatial.getName() + "_BOUNDS");
 
         spatial.depthFirstTraversal(new SceneGraphVisitor() {
             @Override
@@ -386,7 +386,7 @@ public final class SpatialUtil {
 
             for (String key : keys) {
                 if(key.startsWith(name)) {
-                    userDatas.add(spatial.getUserData(key));
+                    userDatas.add((T) spatial.getUserData(key));
                 }
             }
 
@@ -713,7 +713,7 @@ public final class SpatialUtil {
 
 
 
-    public static void removeControlsFor(Spatial spat, Class<? extends Control> controlClass) {
+    public static void removeControlsFor(Spatial spat, final Class<? extends Control> controlClass) {
 //        List<T> controls = new ArrayList<>(3);
 
         spat.depthFirstTraversal(new SceneGraphVisitor() {
@@ -746,8 +746,8 @@ public final class SpatialUtil {
         return controls;
     }
 
-    public static <T extends Control> Collection<T> getControlsFor(Spatial spat, Class<T> controlClass) {
-        List<T> controls = new ArrayList<>(3);
+    public static <T extends Control> Collection<T> getControlsFor(Spatial spat, final Class<T> controlClass) {
+        final List<T> controls = new ArrayList<>(3);
 
         spat.depthFirstTraversal(new SceneGraphVisitor() {
             @Override
@@ -764,7 +764,7 @@ public final class SpatialUtil {
 
 
 
-    public static <T extends Control> T getFirstControlFor(Spatial spat, Class<T> controlClass) {
+    public static <T extends Control> T getFirstControlFor(Spatial spat, final Class<T> controlClass) {
         return visitNodeWith(spat, new Operation() {
 
             T firstControl;
@@ -786,7 +786,7 @@ public final class SpatialUtil {
         }).firstControl;
     }
 
-    public static <T extends AbstractControl> T getFirstEnabledControlFor(Spatial spat, Class<T> controlClass) {
+    public static <T extends AbstractControl> T getFirstEnabledControlFor(Spatial spat, final Class<T> controlClass) {
         return visitNodeWith(spat, new Operation() {
 
             T firstControl;

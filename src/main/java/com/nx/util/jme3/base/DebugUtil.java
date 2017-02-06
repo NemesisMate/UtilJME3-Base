@@ -741,7 +741,7 @@ public class DebugUtil extends AbstractAppState {
 //        geom.setMaterial(SpatialUtil.createMaterial(assetManager, color));
 
         for(Vector3f point : points) {
-            Geometry geom = getDebugBox(0.02f, color);
+            final Geometry geom = getDebugBox(0.02f, color);
             geom.setLocalTranslation(point);
             app.enqueue(new Callable<Void>() {
 
@@ -757,7 +757,7 @@ public class DebugUtil extends AbstractAppState {
     public static void debugPoint(Vector3f point, ColorRGBA color) {
 //        Geometry geom = SpatialUtil.createBox(0.02f);
 //        geom.setMaterial(SpatialUtil.createMaterial(assetManager, color));
-        Geometry geom = getDebugBox(0.02f, color);
+        final Geometry geom = getDebugBox(0.02f, color);
         geom.setLocalTranslation(point);
         app.enqueue(new Callable<Void>() {
 

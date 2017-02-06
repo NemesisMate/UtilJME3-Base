@@ -795,8 +795,12 @@ public final class MergeUtil {
             int count = skeleton.getBoneCount();
             for(int i = 0; i < count; i++) {
                 Bone newBone = bonesAssocs.get(skeleton.getBone(i));
-                if(newSkeletonBoneIndexes.putIfAbsent(newBone, b) == null) {
-                    bones[b++] = newBone;
+                if(!newSkeletonBoneIndexes.containsKey(newBone)) {
+                    if (newSkeletonBoneIndexes.put(newBone, b) == null) {
+                        bones[b++] = newBone;
+                    } else {
+                        LoggerFactory.getLogger(MergeUtil.class).error("WTF!");
+                    }
                 }
 //                bones[b++] = bonesAssocs.get(skeleton.getBone(i));
             }
