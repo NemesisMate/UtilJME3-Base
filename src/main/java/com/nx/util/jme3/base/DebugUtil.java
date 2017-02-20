@@ -492,7 +492,7 @@ public class DebugUtil extends AbstractAppState {
 
     public static void debugLine(Node rootNode, AssetManager assetManager, ColorRGBA drawColor, Vector3f... drawPoints) {
         if(rootNode == null) {
-            setRootNode(rootNode);
+            rootNode = DebugUtil.rootNode;
             if(rootNode == null) {
                 LoggerFactory.getLogger(DebugUtil.class).warn("RootNode is null, not debugging.");
                 return;
@@ -534,6 +534,11 @@ public class DebugUtil extends AbstractAppState {
 
     public static Geometry getLine(AssetManager assetManager, Geometry store, ColorRGBA drawColor, Vector3f... drawPoints) {
         int size = drawPoints.length;
+
+        if(size < 2) {
+            LoggerFactory.getLogger(DebugUtil.class).warn("Shouldn't be trying to debug a line with: {} points.", size);
+            return null;
+        }
 
         float[] points = new float[size * 3];
         short[] index = new short[(size - 1) * 2];

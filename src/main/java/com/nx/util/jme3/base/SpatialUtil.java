@@ -170,6 +170,17 @@ public final class SpatialUtil {
         return null;
     }
 
+    public static void gatherGeoms(Spatial spatial, Mesh.Mode mode, List<Geometry> geomStore) {
+        if (spatial instanceof Node) {
+            Node node = (Node) spatial;
+            for (Spatial child : node.getChildren()) {
+                gatherGeoms(child, mode, geomStore);
+            }
+        } else if (spatial instanceof Geometry && ((Geometry) spatial).getMesh().getMode() == mode) {
+            geomStore.add((Geometry) spatial);
+        }
+    }
+
     public static Node getAllBounds(Spatial spatial) {
         final Node bounds = new Node(spatial.getName() + "_BOUNDS");
 
@@ -1083,5 +1094,15 @@ public final class SpatialUtil {
         }
 
         return false;
+    }
+
+    public static Spatial getDirectChild(Node node, String childName) {
+        for(Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
+            if(childName.equals(child.getName())) {
+                return child;
+            }
+        }
+
+        return null;
     }
 }
