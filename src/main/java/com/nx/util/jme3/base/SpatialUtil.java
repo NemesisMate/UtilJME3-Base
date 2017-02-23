@@ -19,6 +19,7 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.SafeArrayList;
 import jme3tools.optimize.GeometryBatchFactory;
+import org.slf4j.LoggerFactory;
 
 import java.nio.FloatBuffer;
 import java.util.*;
@@ -819,6 +820,29 @@ public final class SpatialUtil {
         }).firstControl;
     }
 
+    public static Geometry createArrow(Vector3f direction) {
+        Geometry geometry = new Geometry("SU Created Arrow", new Arrow(direction));
+        if(geometry.getMesh().getBuffer(VertexBuffer.Type.Normal) == null) {
+            int vCount = geometry.getMesh().getVertexCount();
+            float[] buff = new float[vCount * 3];
+            for(int i = 0; i < vCount; i++) {
+                buff[i] = 0;
+            }
+
+            geometry.getMesh().setBuffer(VertexBuffer.Type.Normal, 3, buff);
+        } else {
+            LoggerFactory.getLogger(SpatialUtil.class).error("I know, this is not an error, but all this normal buffers stuff is not more needed.");
+        }
+        return geometry;
+    }
+
+    /**
+     * Use the DebugUtil getDebugArrow instead.
+     * @param direction
+     * @param color
+     * @return
+     */
+    @Deprecated
     public static Geometry createArrow(Vector3f direction, ColorRGBA color) {
         Arrow arrow = new Arrow(direction);
         Geometry geometry = new Geometry("SU Created Arrow", arrow);
@@ -846,19 +870,11 @@ public final class SpatialUtil {
     }
 
     public static Geometry createBox(float halfX, float halfY, float halfZ) {
-        Box b = new Box(halfX, halfY, halfZ); // create cube shape
-        final Geometry geom = new Geometry("SU Created Box", b);  // create cube geometry from the shape
-
-
-        return geom;
+        return new Geometry("SU Created Box", new Box(halfX, halfY, halfZ));  // create cube geometry from the shape
     }
 
     public static Geometry createSphere(float size) {
-        Sphere s = new Sphere(10, 10, size); // create cube shape
-        final Geometry geom = new Geometry("SU Created Sphere", s);  // create cube geometry from the shape
-
-
-        return geom;
+        return new Geometry("SU Created Sphere", new Sphere(10, 10, size));
     }
 
     public static Geometry createSphere(Vector3f extents) {
@@ -877,12 +893,8 @@ public final class SpatialUtil {
     }
 
     public static Material createMaterial(AssetManager assetManager, ColorRGBA color) {
-        if(color == null) {
-            color = ColorRGBA.randomColor();
-        }
-
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat.setColor("Color", color);
+        mat.setColor("Color", color != null ? color : ColorRGBA.randomColor());
 
         return mat;
     }

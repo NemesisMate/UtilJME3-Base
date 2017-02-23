@@ -741,34 +741,44 @@ public class DebugUtil extends AbstractAppState {
         return geom;
     }
 
+    public static Geometry getDebugArrow(Vector3f vector, ColorRGBA color) {
+        Geometry geom = SpatialUtil.createArrow(vector);
+        geom.setMaterial(SpatialUtil.createMaterial(assetManager, color));
+
+        return geom;
+    }
+
+    public static void debugVector(Vector3f vector, Vector3f position, ColorRGBA color) {
+        debugSpatial(getDebugArrow(vector, color), position);
+    }
+
     public static void debugPoints(ColorRGBA color, Vector3f... points) {
 //        Geometry geom = SpatialUtil.createBox(0.02f);
 //        geom.setMaterial(SpatialUtil.createMaterial(assetManager, color));
 
         for(Vector3f point : points) {
-            final Geometry geom = getDebugBox(0.02f, color);
-            geom.setLocalTranslation(point);
-            app.enqueue(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    add(geom);
-                    return null;
-                }
-            });
+            debugSpatial(getDebugBox(0.02f, color), point);
         }
     }
 
     public static void debugPoint(Vector3f point, ColorRGBA color) {
 //        Geometry geom = SpatialUtil.createBox(0.02f);
 //        geom.setMaterial(SpatialUtil.createMaterial(assetManager, color));
-        final Geometry geom = getDebugBox(0.02f, color);
-        geom.setLocalTranslation(point);
+        debugSpatial(getDebugBox(0.02f, color), point);
+    }
+
+
+    private static void debugSpatial(final Spatial spatial, Vector3f position) {
+        spatial.setLocalTranslation(position);
+        debugSpatial(spatial);
+    }
+
+    private static void debugSpatial(final Spatial spatial) {
         app.enqueue(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {
-                add(geom);
+                add(spatial);
                 return null;
             }
         });
