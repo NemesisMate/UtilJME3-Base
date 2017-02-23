@@ -5,7 +5,6 @@ import com.jme3.animation.Bone;
 import com.jme3.animation.SkeletonControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
-import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -1064,35 +1063,35 @@ public final class SpatialUtil {
     }
 
 
-    public static void enablePhysicsFor(Spatial spatial) {
-        spatial.depthFirstTraversal(new SceneGraphVisitor() {
-
-            @Override
-            public void visit(Spatial spatial) {
-                RigidBodyControl rigid = spatial.getControl(RigidBodyControl.class);
-                if(rigid != null) {
-                    //                    rigid.setPhysicsLocation(new Vector3f(0, 2, 0));
-                    rigid.setEnabled(true);
-                    rigid.activate();
-                }
-            }
-        });
-    }
-
-    public static void disablePhysicsFor(Spatial spatial) {
-        spatial.depthFirstTraversal(new SceneGraphVisitor() {
-
-            @Override
-            public void visit(Spatial spatial) {
-                RigidBodyControl rigid = spatial.getControl(RigidBodyControl.class);
-                if(rigid != null) {
-//                    rigid.clearForces();
-//                    rigid.setApplyPhysicsLocal(true);
-                    rigid.setEnabled(false);
-                }
-            }
-        });
-    }
+//    public static void enablePhysicsFor(Spatial spatial) {
+//        spatial.depthFirstTraversal(new SceneGraphVisitor() {
+//
+//            @Override
+//            public void visit(Spatial spatial) {
+//                RigidBodyControl rigid = spatial.getControl(RigidBodyControl.class);
+//                if(rigid != null) {
+//                    //                    rigid.setPhysicsLocation(new Vector3f(0, 2, 0));
+//                    rigid.setEnabled(true);
+//                    rigid.activate();
+//                }
+//            }
+//        });
+//    }
+//
+//    public static void disablePhysicsFor(Spatial spatial) {
+//        spatial.depthFirstTraversal(new SceneGraphVisitor() {
+//
+//            @Override
+//            public void visit(Spatial spatial) {
+//                RigidBodyControl rigid = spatial.getControl(RigidBodyControl.class);
+//                if(rigid != null) {
+////                    rigid.clearForces();
+////                    rigid.setApplyPhysicsLocal(true);
+//                    rigid.setEnabled(false);
+//                }
+//            }
+//        });
+//    }
 
     public static boolean hasGeometry(Spatial spatial) {
         if(spatial instanceof Node) {
