@@ -103,6 +103,7 @@ public class SceneVars {
         }
         
         collisionResults.clear();
+        ray.setLimit(Float.POSITIVE_INFINITY);
     }
 
     

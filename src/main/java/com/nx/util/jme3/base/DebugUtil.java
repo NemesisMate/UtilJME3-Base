@@ -630,7 +630,12 @@ public class DebugUtil extends AbstractAppState {
         return geometry;
     }
 
-    public static void debugGeometry(Geometry geometry, ColorRGBA color) {
+    public static void debugSpatial(Spatial spatial, Vector3f position, ColorRGBA color) {
+        spatial.setLocalTranslation(position);
+        debugSpatial(spatial, color);
+    }
+
+    public static void debugSpatial(Spatial spatial, ColorRGBA color) {
         if(color == null) {
             color = ColorRGBA.randomColor();
         }
@@ -638,9 +643,19 @@ public class DebugUtil extends AbstractAppState {
         Material matColor = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         matColor.setColor("Color", color);
         matColor.getAdditionalRenderState().setWireframe(true);
-        geometry.setMaterial(matColor);
+        spatial.setMaterial(matColor);
 
-        add(geometry);
+        add(spatial);
+    }
+
+    /**
+     * @param spatial
+     * @param color
+     * @deprecated in favor of {@link #debugSpatial(Spatial, ColorRGBA)}
+     */
+    @Deprecated
+    public static void debugGeometry(Spatial spatial, ColorRGBA color) {
+        debugSpatial(spatial, color);
     }
 
 
@@ -798,7 +813,7 @@ public class DebugUtil extends AbstractAppState {
 
             if(count++ > 50) {
                 count = 0;
-                batchNode.batch();
+//                batchNode.batch();
             }
         } else {
             LoggerFactory.getLogger(DebugUtil.class).error("No debug rootNode set");
