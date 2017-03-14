@@ -10,7 +10,9 @@ import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.*;
 import com.jme3.scene.shape.Sphere;
@@ -840,6 +842,34 @@ public class DebugUtil extends AbstractAppState {
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     *
+     * @author survivor
+     */
+    public static Vector3f[] getFrustumDebugPoints(Camera cam, Vector3f[] points) {
+        if(points == null) {
+            points = new Vector3f[8];
+        }
+
+        int w = cam.getWidth();
+        int h = cam.getHeight();
+        final float n = 0;
+        final float f = 1f;
+
+        points[0].set(cam.getWorldCoordinates(new Vector2f(0, 0), n));
+        points[1].set(cam.getWorldCoordinates(new Vector2f(0, h), n));
+        points[2].set(cam.getWorldCoordinates(new Vector2f(w, h), n));
+        points[3].set(cam.getWorldCoordinates(new Vector2f(w, 0), n));
+
+        points[4].set(cam.getWorldCoordinates(new Vector2f(0, 0), f));
+        points[5].set(cam.getWorldCoordinates(new Vector2f(0, h), f));
+        points[6].set(cam.getWorldCoordinates(new Vector2f(w, h), f));
+        points[7].set(cam.getWorldCoordinates(new Vector2f(w, 0), f));
+
+        return points;
     }
 
 }

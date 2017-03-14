@@ -11,7 +11,6 @@ import com.jme3.renderer.ViewPort;
 import com.jme3.scene.Spatial;
 import com.jme3.texture.FrameBuffer;
 import com.jme3.texture.Image;
-import com.jme3.texture.Texture;
 import com.jme3.texture.Texture2D;
 import com.jme3.util.BufferUtils;
 import com.jme3.util.TempVars;
@@ -151,7 +150,7 @@ public final class SceneUtil {
      * @param offScene
      * @return
      */
-    public static Texture takeScreenShot(final RenderManager renderManager, Spatial offScene) {
+    public static Texture2D takeScreenShot(final RenderManager renderManager, Spatial offScene) {
 //        offScene = offScene.clone();
 
         boolean parallel = true;
