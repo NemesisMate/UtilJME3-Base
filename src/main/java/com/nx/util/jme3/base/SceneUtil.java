@@ -158,7 +158,8 @@ public final class SceneUtil {
         Camera offCamera = new Camera(512, 512);
 
         final ViewPort offView = renderManager.createPreView("Offscreen View", offCamera);
-        offView.setBackgroundColor(new ColorRGBA(.2f, .3f, .1f, .6f));
+//        offView.setBackgroundColor(new ColorRGBA(.2f, .3f, .1f, .6f));
+        offView.setBackgroundColor(ColorRGBA.BlackNoAlpha);
         offView.setClearFlags(true, true, true);
 
         // create offscreen framebuffer

@@ -30,6 +30,7 @@ public abstract class SpatialAutoManager extends AbstractControl {
     @Override
     protected void controlUpdate(float tpf) {
         if(checker != null) {
+            checker.check();
             return;
         }
 
