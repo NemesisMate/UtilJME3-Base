@@ -5,6 +5,9 @@ import com.jme3.animation.Bone;
 import com.jme3.animation.SkeletonControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
+import com.jme3.bounding.BoundingVolume;
+import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
@@ -1130,6 +1133,26 @@ public final class SpatialUtil {
         mesh.updateBound();
     }
 
+
+    public static int collidesWithBounds(Collidable other, CollisionResults results, Spatial spatial) {
+        BoundingVolume bv = spatial.getWorldBound();
+        if(bv == null) {
+            return 0;
+        }
+
+        int total = bv.collideWith(other, results);
+        if(total != 0) {
+            return total;
+        }
+
+        if(spatial instanceof Node) {
+            for(Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
+                total += collidesWithBounds(other, results, child);
+            }
+        }
+
+        return total;
+    }
 
 
 
