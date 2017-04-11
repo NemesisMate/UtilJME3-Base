@@ -86,6 +86,10 @@ public class DebugUtil extends AbstractAppState {
 
     }
 
+    public static boolean isDebugging() {
+        return assetManager != null;
+    }
+
 //    @Override
 //    public void update(float tpf) {
 //        super.update(tpf);
