@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import java.awt.image.BufferedImage;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -92,7 +91,6 @@ public final class ImageUtil {
     }
 
     public static void writeImage(BufferedImage image, FileOutputStream saveStream) throws IOException {
-        ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
         ImageIO.write(image, "png", saveStream);
     }
 
