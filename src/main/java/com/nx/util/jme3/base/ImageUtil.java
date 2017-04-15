@@ -5,6 +5,7 @@ import com.jme3.texture.Image;
 import com.jme3.texture.image.ColorSpace;
 import com.jme3.texture.image.ImageRaster;
 import com.jme3.util.BufferUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
@@ -15,6 +16,8 @@ import java.util.ArrayList;
  * Created by NemesisMate on 13/03/17.
  */
 public final class ImageUtil {
+
+    static Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
     private ImageUtil() {
 
@@ -44,132 +47,113 @@ public final class ImageUtil {
         return new Image(Image.Format.RGB8, width, height, depth, data, com.jme3.texture.image.ColorSpace.Linear);
     }
 
-    private static BufferedImage getABGR8ImageInternal(Image image) {
+
+//    private static BufferedImage getABGR8ImageInternal(Image image) {
+//        ByteBuffer bb = image.getData(0);
+//        bb.clear();
+//
+//        LoggerFactory.getLogger(ImageUtil.class).debug("Converting ABGR8 image to ARGB");
+//
+//        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//        int[] raw = new int[bb.limit()];
+//        for (int i = 0; i < bb.limit() / 4; i++) {
+//            raw[i] = ((bb.get(4 * i + 1) & 0xFF)) |
+//                    ((bb.get(4 * i + 0) & 0xFF) << 24) |
+//                    ((bb.get(4 * i + 3) & 0xFF) << 16) |
+//                    ((bb.get(4 * i + 2) & 0xFF) << 8);
+//
+//        }
+//
+//        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
+//
+//
+////        String[] imageStrings = new String[image.getWidth()];
+////        for(int x = 0; x < awtImage.getWidth(); x++) {
+////            String imageString = "";
+////            for(int y = 0; y < awtImage.getHeight(); y++) {
+//////                int color = raw[x * awtImage.getHeight() + y];
+////                int color = awtImage.getRGB(x, y);
+////                //                            int color = awtImage.getRGB(x, y);
+////                imageString += color + " - ARGB(" + ((color & 0xFF000000) >> 24) + "," + ((color & 0x00FF0000) >> 16) + "," + ((color & 0x0000FF00) >> 8) + "," + (color & 0x000000FF) + "), ";
+////            }
+////            imageStrings[x] = imageString + "\n";
+////        }
+////        LoggerFactory.getLogger(VisualUtil.class).debug("IMAGE IS: {}.", Arrays.toString(imageStrings));
+//
+//        return awtImage;
+//    }
+
+    public static BufferedImage getARGB8ImageFrom(Image image) {
+        int A, R, G, B;
+        switch (image.getFormat()) {
+            case RGBA8:
+                R = 0; G = 1; B = 2; A = 3;
+                break;
+            case ABGR8:
+                A = 0; B = 1; G = 2; R = 3;
+                break;
+            case ARGB8:
+                A = 0; R = 1; G = 2; B = 3;
+                break;
+            case BGRA8:
+                B = 0; G = 1; R = 2; A = 3;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        if(logger.isDebugEnabled()) {
+            LoggerFactory.getLogger(ImageUtil.class).debug("Converting {0} image to ARGB8", image.getFormat());
+        }
+
         ByteBuffer bb = image.getData(0);
         bb.clear();
-
-        LoggerFactory.getLogger(ImageUtil.class).debug("Converting ABGR8 image to ARGB");
 
         BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         int[] raw = new int[bb.limit()];
         for (int i = 0; i < bb.limit() / 4; i++) {
-            raw[i] = ((bb.get(4 * i + 1) & 0xFF)) |
-                    ((bb.get(4 * i + 0) & 0xFF) << 24) |
-                    ((bb.get(4 * i + 3) & 0xFF) << 16) |
-                    ((bb.get(4 * i + 2) & 0xFF) << 8);
+            raw[i] = ((bb.get(4 * i + B) & 0xFF)) |         // B (index: 2)
+                    ((bb.get(4 * i + A) & 0xFF) << 24) |    // A (index: 3)
+                    ((bb.get(4 * i + R) & 0xFF) << 16) |    // R (index: 0)
+                    ((bb.get(4 * i + G) & 0xFF) << 8);      // G (index: 1)
 
         }
-
         awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
-
-
-//        String[] imageStrings = new String[image.getWidth()];
-//        for(int x = 0; x < awtImage.getWidth(); x++) {
-//            String imageString = "";
-//            for(int y = 0; y < awtImage.getHeight(); y++) {
-////                int color = raw[x * awtImage.getHeight() + y];
-//                int color = awtImage.getRGB(x, y);
-//                //                            int color = awtImage.getRGB(x, y);
-//                imageString += color + " - ARGB(" + ((color & 0xFF000000) >> 24) + "," + ((color & 0x00FF0000) >> 16) + "," + ((color & 0x0000FF00) >> 8) + "," + (color & 0x000000FF) + "), ";
-//            }
-//            imageStrings[x] = imageString + "\n";
-//        }
-//        LoggerFactory.getLogger(VisualUtil.class).debug("IMAGE IS: {}.", Arrays.toString(imageStrings));
-
-        return awtImage;
-    }
-
-    public static BufferedImage getARGB8ImageFromABGR8(Image image) {
-
-        ByteBuffer bb = image.getData(0);
-        bb.clear();
-
-
-
-//        LoggerFactory.getLogger(ExportUtils.class).debug("RECEIVED BUFFER: {} x {} = {}. Limit: {}.", image.getWidth(), image.getHeight(), image.getHeight() * image.getWidth(), bb.limit());
-//        String[] imageStrings = new String[image.getWidth()];
-//        for(int x = 0; x < image.getWidth(); x++) {
-//            String imageString = "";
-//            for(int y = 0; y < image.getHeight(); y+=4) {
-//                imageString += " - ABGR(" + (bb.get(x * image.getHeight() + y) & 0xFF)  + "," + (bb.get((x * image.getHeight() + y) + 1) & 0xFF) + "," + (bb.get((x * image.getHeight() + y) + 2) & 0xFF) + "," + (bb.get((x * image.getHeight() + y) + 3) & 0xFF) + "), ";
-//            }
-//            imageStrings[x] = imageString + "\n";
-//        }
-//        LoggerFactory.getLogger(ExportUtils.class).debug("RECEIVED IMAGE IS: {}.", Arrays.toString(imageStrings));
-
-
-
-
-
-        LoggerFactory.getLogger(ImageUtil.class).debug("Converting ABGR8 image to ARGB");
-
-//        imageStrings = new String[bb.limit() / 4];
-
-        //                                                bb.flip();
-        //                                                ImageToAwt.conv
-        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-//        BufferedImage retImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        int[] raw = new int[bb.limit()];
-        for (int i = 0; i < bb.limit() / 4; i++) {
-            //                                                    raw[i] = ((bb.get(4 * i + 0) & 0xFF)) |
-            //                                                            ((bb.get(4 * i + 3) & 0xFF) << 24) |
-            //                                                            ((bb.get(4 * i + 2) & 0xFF) << 16) |
-            //                                                            ((bb.get(4 * i + 1) & 0xFF) << 8);
-
-
-            // The '& 0xFF' is for getting the unsigned byte (if the byte is negative, it gives the positive equivalent, that is: +128, not an absolute)
-            // Composes the pixel color as int values from byte values. So an int is the mix of the 4 bytes forming the pixel.
-            raw[i] = ((bb.get(4 * i + 1) & 0xFF)) |
-                    ((bb.get(4 * i + 0) & 0xFF) << 24) |
-                    ((bb.get(4 * i + 3) & 0xFF) << 16) |
-                    ((bb.get(4 * i + 2) & 0xFF) << 8);
-
-//            imageStrings[i] = "Converting: ABGR(" + (bb.get(4 * i + 1) & 0xFF) + "," +
-//                                                    (bb.get(4 * i + 0) & 0xFF) + "[" + ((bb.get(4 * i + 0) & 0xFF) << 24) + "]," +
-//                                                    (bb.get(4 * i + 3) & 0xFF) + "[" + ((bb.get(4 * i + 3) & 0xFF) << 16) + "]," +
-//                                                    (bb.get(4 * i + 2) & 0xFF) + "[" + ((bb.get(4 * i + 2) & 0xFF) << 8) + "]" + ") -> " + raw[i];
-
-        }
-
-//        LoggerFactory.getLogger(ExportUtils.class).debug("CONVERTING: {}.", Arrays.toString(imageStrings));
-
-
-
-
-//        LoggerFactory.getLogger(ExportUtils.class).debug("OUT awtImage");
-//        imageStrings = new String[awtImage.getWidth()];
-//
-//        String imageString = "";
-//        for(int i = 0; i < raw.length; i++) {
-//            int color = raw[i];
-//            imageString = color + " - ARGB(" + (color & 0xFF) + "," + (color & 0x00FF) + "," + (color & 0x0000FF) + "," + (color & 0x000000FF) + "), "; // no rula, mira abajo
-//        }
-//
-//        LoggerFactory.getLogger(ExportUtils.class).debug("IMAGE IS: {}.", imageString);
-
-
-        // If the alpha channel is not being saved, look at vertical flip.
-        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
-
-
-//        String[] imageStrings = new String[image.getWidth()];
-//        for(int x = 0; x < awtImage.getWidth(); x++) {
-//            String imageString = "";
-//            for(int y = 0; y < awtImage.getHeight(); y++) {
-////                int color = raw[x * awtImage.getHeight() + y];
-//                int color = awtImage.getRGB(x, y);
-//                //                            int color = awtImage.getRGB(x, y);
-//                imageString += color + " - ARGB(" + ((color & 0xFF000000) >> 24) + "," + ((color & 0x00FF0000) >> 16) + "," + ((color & 0x0000FF00) >> 8) + "," + (color & 0x000000FF) + "), ";
-//            }
-//            imageStrings[x] = imageString + "\n";
-//        }
-//        LoggerFactory.getLogger(VisualUtil.class).debug("IMAGE IS: {}.", Arrays.toString(imageStrings));
-
-
 
         awtImage = verticalFlip(awtImage);
 
         return awtImage;
+    }
+
+    @Deprecated
+    public static BufferedImage getARGB8ImageFromABGR8(Image image) {
+
+        return getARGB8ImageFrom(image);
+//        ByteBuffer bb = image.getData(0);
+//        bb.clear();
+//
+//        LoggerFactory.getLogger(ImageUtil.class).debug("Converting ABGR8 image to ARGB");
+//        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//
+//        int[] raw = new int[bb.limit()];
+//        for (int i = 0; i < bb.limit() / 4; i++) {
+//
+//            // The '& 0xFF' is for getting the unsigned byte (if the byte is negative, it gives the positive equivalent, that is: +128, not an absolute)
+//            // Composes the pixel color as int values from byte values. So an int is the mix of the 4 bytes forming the pixel.
+//            raw[i] = ((bb.get(4 * i + 1) & 0xFF)) |         // B (index: 1)
+//                    ((bb.get(4 * i + 0) & 0xFF) << 24) |    // A (index: 0)
+//                    ((bb.get(4 * i + 3) & 0xFF) << 16) |    // R (index: 3)
+//                    ((bb.get(4 * i + 2) & 0xFF) << 8);      // G (index: 2)
+//
+//
+//        }
+//
+//        // If the alpha channel is not being saved, look at vertical flip.
+//        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
+//
+//        awtImage = verticalFlip(awtImage);
+//
+//        return awtImage;
     }
 
 

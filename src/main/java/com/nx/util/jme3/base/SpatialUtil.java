@@ -161,9 +161,11 @@ public final class SpatialUtil {
         return lines;
     }
 
+
+
     public static Geometry gatherFirstGeom(Spatial spatial) {
         if (spatial instanceof Node) {
-            for (Spatial child : ((Node) spatial).getChildren()) {
+            for (Spatial child : ((SafeArrayList<Spatial>)((Node)spatial).getChildren()).getArray()) {
                 return gatherFirstGeom(child);
             }
         } else if (spatial instanceof Geometry) {
@@ -173,10 +175,23 @@ public final class SpatialUtil {
         return null;
     }
 
+    public static List<Mesh> gatherMeshes(Spatial spatial, List<Mesh> meshStore) {
+        if (spatial instanceof Node) {
+            Node node = (Node) spatial;
+            for (Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
+                gatherMeshes(child, meshStore);
+            }
+        } else if (spatial instanceof Geometry) {
+            meshStore.add(((Geometry) spatial).getMesh());
+        }
+
+        return meshStore;
+    }
+
     public static void gatherGeoms(Spatial spatial, Mesh.Mode mode, List<Geometry> geomStore) {
         if (spatial instanceof Node) {
             Node node = (Node) spatial;
-            for (Spatial child : node.getChildren()) {
+            for (Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
                 gatherGeoms(child, mode, geomStore);
             }
         } else if (spatial instanceof Geometry && ((Geometry) spatial).getMesh().getMode() == mode) {
