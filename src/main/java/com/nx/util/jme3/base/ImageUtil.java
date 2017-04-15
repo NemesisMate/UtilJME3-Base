@@ -8,7 +8,11 @@ import com.jme3.util.BufferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
 import java.awt.image.BufferedImage;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -83,6 +87,26 @@ public final class ImageUtil {
 //        return awtImage;
 //    }
 
+    public static void writeImage(Image image, FileOutputStream saveStream) throws IOException {
+        writeImage(getWriteImageFrom(image), saveStream);
+    }
+
+    public static void writeImage(BufferedImage image, FileOutputStream saveStream) throws IOException {
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
+        ImageIO.write(image, "png", saveStream);
+    }
+
+    public static BufferedImage getWriteImageFrom(Image image) {
+        int bpp = image.getFormat().getBitsPerPixel();
+        if(bpp == 32) {
+            return getARGB8ImageFrom(image);
+        } else if(bpp == 24) {
+            return getRGBImageFrom(image);
+        }
+
+        throw new IllegalArgumentException();
+    }
+
     public static BufferedImage getARGB8ImageFrom(Image image) {
         int A, R, G, B;
         switch (image.getFormat()) {
@@ -112,15 +136,45 @@ public final class ImageUtil {
         BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         int[] raw = new int[bb.limit()];
         for (int i = 0; i < bb.limit() / 4; i++) {
-            raw[i] = ((bb.get(4 * i + B) & 0xFF)) |         // B (index: 2)
-                    ((bb.get(4 * i + A) & 0xFF) << 24) |    // A (index: 3)
-                    ((bb.get(4 * i + R) & 0xFF) << 16) |    // R (index: 0)
-                    ((bb.get(4 * i + G) & 0xFF) << 8);      // G (index: 1)
+            raw[i] = ((bb.get(4 * i + B) & 0xFF)) |
+                    ((bb.get(4 * i + A) & 0xFF) << 24) |
+                    ((bb.get(4 * i + R) & 0xFF) << 16) |
+                    ((bb.get(4 * i + G) & 0xFF) << 8);
 
         }
         awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
 
         awtImage = verticalFlip(awtImage);
+
+        return awtImage;
+    }
+
+
+    public static BufferedImage getRGBImageFrom(Image image) {
+        int R, G, B;
+        switch (image.getFormat()) {
+            case RGB8:
+                R = 0; G = 1; B = 2;
+                break;
+            case BGR8:
+                B = 0; G = 1; R = 2;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        ByteBuffer bb = image.getData(0);
+        bb.clear();
+
+        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int[] raw = new int[bb.limit() * 4 / 3];
+        for (int i = 0; i < bb.limit() / 3; i++) {
+            raw[i] = 0xFF000000 |
+                    ((bb.get(3 * i + B) & 0xFF) << 16) |
+                    ((bb.get(3 * i + G) & 0xFF) << 8) |
+                    ((bb.get(3 * i + R) & 0xFF));
+        }
+        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
 
         return awtImage;
     }
