@@ -15,27 +15,27 @@ import java.io.IOException;
  *
  * Based on: {@link com.jme3.scene.AssetLinkNode}
  */
-public class SingleLinkMaterialized extends SingleLinkNode {
+public class SingleLinkMaterializedNode extends SingleLinkNode {
 
     MaterialKey materialKey;
 
 
-    public SingleLinkMaterialized() {
+    public SingleLinkMaterializedNode() {
     }
 
-    public SingleLinkMaterialized(ModelKey key, MaterialKey materialKey) {
+    public SingleLinkMaterializedNode(ModelKey key, MaterialKey materialKey) {
         super(key);
 
         this.materialKey = materialKey;
     }
 
-    public SingleLinkMaterialized(String name, ModelKey key, MaterialKey materialKey) {
+    public SingleLinkMaterializedNode(String name, ModelKey key, MaterialKey materialKey) {
         super(name, key);
 
         this.materialKey = materialKey;
     }
 
-    public SingleLinkMaterialized(String name, Spatial asset, ModelKey key, MaterialKey materialKey) {
+    public SingleLinkMaterializedNode(String name, Spatial asset, ModelKey key, MaterialKey materialKey) {
         super(name, asset, key);
 
         this.materialKey = materialKey;
