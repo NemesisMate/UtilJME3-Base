@@ -1170,7 +1170,7 @@ public final class SpatialUtil {
     }
 
 
-    public boolean meshEquals(Mesh mesh1, Mesh mesh2) {
+    public static boolean meshEquals(Mesh mesh1, Mesh mesh2) {
         if(mesh1.getVertexCount() != mesh2.getVertexCount()) {
             return false;
         }
