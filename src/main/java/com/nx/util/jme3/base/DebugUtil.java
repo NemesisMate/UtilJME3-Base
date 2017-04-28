@@ -6,6 +6,8 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.asset.AssetManager;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -702,6 +704,14 @@ public class DebugUtil extends AbstractAppState {
 
     public static Material createDebugMaterial(Geometry geom, boolean colors) {
         Material mat;
+
+        if(geom instanceof ParticleEmitter && ((ParticleEmitter) geom).getMeshType() == ParticleMesh.Type.Point) {
+            mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+//            if(colors) {
+                mat.setColor("GlowColor", ColorRGBA.randomColor());
+//            }
+            return mat;
+        }
 
         if(colors) {
             mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
