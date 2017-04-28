@@ -23,7 +23,7 @@ import com.jme3.util.SafeArrayList;
 import jme3tools.optimize.GeometryBatchFactory;
 import org.slf4j.LoggerFactory;
 
-import java.nio.FloatBuffer;
+import java.nio.*;
 import java.util.*;
 
 import static com.nx.util.jme3.base.DebugUtil.assetManager;
@@ -1170,6 +1170,113 @@ public final class SpatialUtil {
     }
 
 
+    public boolean meshEquals(Mesh mesh1, Mesh mesh2) {
+        if(mesh1.getVertexCount() != mesh2.getVertexCount()) {
+            return false;
+        }
 
+        if(mesh1.getTriangleCount() != mesh2.getTriangleCount()) {
+            return false;
+        }
+
+        if(mesh1.getMode() != mesh2.getMode()) {
+            return false;
+        }
+
+        Collection<VertexBuffer> buffers1 = mesh1.getBufferList();
+        Collection<VertexBuffer> buffers2 = mesh2.getBufferList();
+
+        if(buffers1.size() != buffers2.size()) {
+            return false;
+        }
+
+        outer:
+        for(VertexBuffer vertexBuffer1 : buffers1) {
+            for(VertexBuffer vertexBuffer2 : buffers2) {
+                if(vertexBuffer1.getBufferType() == vertexBuffer2.getBufferType()) {
+                    if(vertexBuffer1.getFormat() != vertexBuffer2.getFormat()) {
+                        return false;
+                    }
+
+                    if(vertexBuffer1.getUsage() != vertexBuffer2.getUsage()) {
+                        return false;
+                    }
+
+                    if(vertexBuffer1.getNumElements() != vertexBuffer2.getNumElements()) {
+                        return false;
+                    }
+
+                    if(vertexBuffer1.getNumComponents() != vertexBuffer2.getNumComponents()) {
+                        return false;
+                    }
+
+                    Buffer data1 = vertexBuffer1.getData();
+                    Buffer data2 = vertexBuffer2.getData();
+
+                    if (data1 instanceof FloatBuffer) {
+                        FloatBuffer buf1 = (FloatBuffer) data1;
+                        FloatBuffer buf2 = (FloatBuffer) data2;
+
+                        int capacity = buf1.capacity();
+                        for(int i = 0; i < capacity; i++) {
+                            if(buf1.get(i) != buf2.get(i)) {
+                                return false;
+                            }
+                        }
+                    } else if (data1 instanceof ShortBuffer) {
+                        ShortBuffer buf1 = (ShortBuffer) data1;
+                        ShortBuffer buf2 = (ShortBuffer) data2;
+
+                        int capacity = buf1.capacity();
+                        for(int i = 0; i < capacity; i++) {
+                            if(buf1.get(i) != buf2.get(i)) {
+                                return false;
+                            }
+                        }
+                    } else if (data1 instanceof ByteBuffer) {
+                        ByteBuffer buf1 = (ByteBuffer) data1;
+                        ByteBuffer buf2 = (ByteBuffer) data2;
+
+                        int capacity = buf1.capacity();
+                        for(int i = 0; i < capacity; i++) {
+                            if(buf1.get(i) != buf2.get(i)) {
+                                return false;
+                            }
+                        }
+                    } else if (data1 instanceof IntBuffer) {
+                        IntBuffer buf1 = (IntBuffer) data1;
+                        IntBuffer buf2 = (IntBuffer) data2;
+
+                        int capacity = buf1.capacity();
+                        for(int i = 0; i < capacity; i++) {
+                            if(buf1.get(i) != buf2.get(i)) {
+                                return false;
+                            }
+                        }
+                    } else if (data1 instanceof DoubleBuffer) {
+                        DoubleBuffer buf1 = (DoubleBuffer) data1;
+                        DoubleBuffer buf2 = (DoubleBuffer) data2;
+
+                        int capacity = buf1.capacity();
+                        for(int i = 0; i < capacity; i++) {
+                            if(buf1.get(i) != buf2.get(i)) {
+                                return false;
+                            }
+                        }
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+
+
+
+                    continue outer;
+                }
+            }
+
+            return false;
+        }
+
+        return true;
+    }
 
 }

@@ -44,6 +44,12 @@ public class SingleLinkNode extends Node {
 //        assetLoaderKeys.add(key);
     }
 
+    public SingleLinkNode(String name, Spatial asset, ModelKey key) {
+        super(name);
+
+        attachLinkedChild(asset, key);
+    }
+
     /**
      *  Called internally by com.jme3.util.clone.Cloner.  Do not call directly.
      */
