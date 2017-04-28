@@ -126,7 +126,9 @@ public final class SpatialUtil {
             
             String data = dashes + spatial;
             if(spatial instanceof Geometry) {
-                data += "(" + ((Geometry)spatial).getMaterial().getName() + " <>" + ((Geometry) spatial).getMaterial().getKey() + ")";
+                Material material = ((Geometry)spatial).getMaterial();
+
+                data += "(" + (material == null ? "<N/M>" : ((Geometry)spatial).getMaterial().getName() + " <>" + ((Geometry) spatial).getMaterial().getKey() + ")");
             }
 
             int numControls = spatial.getNumControls();
