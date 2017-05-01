@@ -8,6 +8,7 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.export.binary.BinaryImporter;
+import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.SafeArrayList;
@@ -184,6 +185,8 @@ public class SingleLinkNode extends Node {
                 assetChild = (Spatial) importer.load(info);
             }
             if (assetChild != null) {
+                System.out.println("LOADED: " + info + ". Mesh: " + SpatialUtil.meshBuffersHash(((Geometry)assetChild).getMesh()));
+
                 //FIXME: :( Can't access parent from here!!!, so a much less efficient way is used: attachChild
 //                child.parent = this;
 //                children.add(assetChild);

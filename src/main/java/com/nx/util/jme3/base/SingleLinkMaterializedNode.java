@@ -7,6 +7,7 @@ import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.OutputCapsule;
 import com.jme3.scene.Spatial;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -57,7 +58,11 @@ public class SingleLinkMaterializedNode extends SingleLinkNode {
 
         materialKey = (MaterialKey) capsule.readSavable("materialLoaderKey", null);
 
-        if(assetChild != null){
+        if(assetChild != null) {
+            assetChild = (Spatial) e.getAssetManager().loadAsset(assetLoaderKey);
+
+            LoggerFactory.getLogger(this.getClass()).debug("LINKLOADING MKEY: {}, for: {}", materialKey, assetChild);
+
             assetChild.setMaterial(e.getAssetManager().loadAsset(materialKey));
         }
     }

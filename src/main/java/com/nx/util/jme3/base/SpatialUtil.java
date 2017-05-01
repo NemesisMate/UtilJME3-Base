@@ -1289,4 +1289,57 @@ public final class SpatialUtil {
         return true;
     }
 
+    public static int meshBuffersHash(Mesh mesh) {
+        int hash = 0;
+
+        for (VertexBuffer vb : mesh.getBufferList().getArray()) {
+            hash += vb.hashCode();
+        }
+
+        return hash;
+    }
+
+    public static boolean meshShareBuffers(Mesh mesh1, Mesh mesh2) {
+        if(mesh1 == mesh2) {
+            return true;
+        }
+
+        if(mesh1 == null || mesh2 == null) {
+            return false;
+        }
+
+        for (VertexBuffer vb : mesh1.getBufferList().getArray()) {
+            if(mesh2.getBuffer(vb.getBufferType()) != vb) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean meshShareBuffers(Mesh mesh1, Mesh mesh2, Mesh... meshes) {
+        if(!meshShareBuffers(mesh1, mesh2)) {
+            return false;
+        }
+
+        VertexBuffer[] buffers = mesh1.getBufferList().getArray();
+        for(Mesh m : meshes) {
+            if(m == mesh1) {
+                return true;
+            }
+
+            if(m == null) {
+                return false;
+            }
+
+            for (VertexBuffer vb : buffers) {
+                if(m.getBuffer(vb.getBufferType()) != vb) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
 }
