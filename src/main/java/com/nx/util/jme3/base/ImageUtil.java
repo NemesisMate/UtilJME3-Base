@@ -218,7 +218,7 @@ public final class ImageUtil {
         // If the height is odd, then the middle one isn't touched (so, all fine :D)
         height /= 2;
         for(int x = 0; x < width; x++) {
-            for(int y = 0; y <= height; y++) {
+            for(int y = 0; y < height; y++) {
                 int auxRGBA = original.getRGB(x, y);
 
                 original.setRGB(x, y, original.getRGB(x, adjustedHeight - y));
