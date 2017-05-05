@@ -10,6 +10,7 @@ import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
+import com.jme3.material.MaterialDef;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
@@ -19,6 +20,7 @@ import com.jme3.scene.control.Control;
 import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
+import com.jme3.shader.VarType;
 import com.jme3.util.SafeArrayList;
 import jme3tools.optimize.GeometryBatchFactory;
 import org.slf4j.LoggerFactory;
@@ -1340,6 +1342,34 @@ public final class SpatialUtil {
         }
 
         return true;
+    }
+
+    /**
+     * Based on Ali_RS original code: {@link <a href="https://hub.jmonkeyengine.org/t/instancednode-noob-questions/34931/">}
+     *
+     * Currently this breaks the material somehow. So, maybe a new material should be created
+     * @param spatial
+     */
+    public static void enableMaterialInstancing(Spatial spatial) {
+        if(spatial instanceof Geometry) {
+            Material mat = ((Geometry) spatial).getMaterial();
+            MaterialDef matDef = mat.getMaterialDef();
+
+            if(matDef.getMaterialParam("UseInstancing") == null) {
+                matDef.addMaterialParam(VarType.Boolean, "UseInstancing", false);
+            }
+
+            mat.setBoolean("UseInstancing", true);
+            spatial.setBatchHint(Spatial.BatchHint.Inherit);
+        } else if (spatial instanceof Node) {
+            for (Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
+                if (child instanceof GeometryGroupNode) {
+                    continue;
+                }
+
+                enableMaterialInstancing(child);
+            }
+        }
     }
 
 }

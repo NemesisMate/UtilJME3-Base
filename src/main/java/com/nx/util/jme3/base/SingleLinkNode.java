@@ -13,6 +13,7 @@ import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.util.SafeArrayList;
 import com.jme3.util.clone.Cloner;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -35,20 +36,20 @@ public class SingleLinkNode extends Node {
     public SingleLinkNode() {
     }
 
-    public SingleLinkNode(ModelKey key) {
-        this(key.getName(), key);
+    public SingleLinkNode(ModelKey modelKey) {
+        this(modelKey.getName(), modelKey);
     }
 
-    public SingleLinkNode(String name, ModelKey key) {
+    public SingleLinkNode(String name, ModelKey modelKey) {
         super(name);
-        assetLoaderKey = key;
+        assetLoaderKey = modelKey;
 //        assetLoaderKeys.add(key);
     }
 
-    public SingleLinkNode(String name, Spatial asset, ModelKey key) {
+    public SingleLinkNode(String name, Spatial asset, ModelKey modelKey) {
         super(name);
 
-        attachLinkedChild(asset, key);
+        attachLinkedChild(asset, modelKey);
     }
 
     /**
@@ -64,7 +65,7 @@ public class SingleLinkNode extends Node {
 //        this.assetLoaderKeys = cloner.clone(assetLoaderKeys);
 //        this.assetChildren = new HashMap<ModelKey, Spatial>();
 
-        this.key = cloner.clone(key);
+        this.assetLoaderKey = cloner.clone(assetLoaderKey);
         this.assetChild = null;
     }
 
@@ -169,23 +170,39 @@ public class SingleLinkNode extends Node {
     }
 
     @Override
-    public void read(JmeImporter e) throws IOException {
-        super.read(e);
-        InputCapsule capsule = e.getCapsule(this);
+    public void read(JmeImporter im) throws IOException {
+        super.read(im);
+        InputCapsule ic = im.getCapsule(this);
         BinaryImporter importer = BinaryImporter.getInstance();
-        AssetManager loaderManager = e.getAssetManager();
+        AssetManager loaderManager = im.getAssetManager();
 
-        assetLoaderKey = (ModelKey) capsule.readSavable("assetLoaderKey", null);
+        LoggerFactory.getLogger(this.getClass()).debug("SINGLELINKING.... 0: ");
+
+        assetLoaderKey = (ModelKey) ic.readSavable("assetLoaderKey", null);
+
+
+        LoggerFactory.getLogger(this.getClass()).debug("SINGLELINKING: " + assetLoaderKey);
 
         if(assetLoaderKey != null) {
-            AssetInfo info = loaderManager.locateAsset(assetLoaderKey);
+//            AssetInfo info = loaderManager.locateAsset(assetLoaderKey);
 
 //            Spatial child = null;
-            if (info != null) {
-                assetChild = (Spatial) importer.load(info);
-            }
+//            if (info != null) {
+                assetChild = loaderManager.getFromCache(assetLoaderKey);
+                if(assetChild == null) {
+                    AssetInfo info = loaderManager.locateAsset(assetLoaderKey);
+                    assetChild = (Spatial) importer.load(info);
+
+                    loaderManager.addToCache(assetLoaderKey, assetChild);
+                } else {
+                    assetChild = assetChild.clone();
+                    LoggerFactory.getLogger(this.getClass()).debug("YEI!, loaded from cache!!!");
+                }
+//                assetChild = (Spatial) importer.load(info);
+
+//            }
             if (assetChild != null) {
-                System.out.println("LOADED: " + info + ". Mesh: " + SpatialUtil.meshBuffersHash(((Geometry)assetChild).getMesh()));
+                LoggerFactory.getLogger(this.getClass()).debug("LOADED: " + assetLoaderKey + ". Mesh: " + SpatialUtil.meshBuffersHash(((Geometry)assetChild).getMesh()));
 
                 //FIXME: :( Can't access parent from here!!!, so a much less efficient way is used: attachChild
 //                child.parent = this;
@@ -204,6 +221,7 @@ public class SingleLinkNode extends Node {
         children = new SafeArrayList<Spatial>(Spatial.class);
         super.write(e);
         OutputCapsule capsule = e.getCapsule(this);
+        LoggerFactory.getLogger(this.getClass()).debug("Writing assetLoaderKey: {}, for: {}", assetLoaderKey, assetChild);
         capsule.write(assetLoaderKey, "assetLoaderKey", null);
         children = childs;
     }

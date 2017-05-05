@@ -125,7 +125,7 @@ public final class ImageUtil {
         }
 
         if(logger.isDebugEnabled()) {
-            LoggerFactory.getLogger(ImageUtil.class).debug("Converting {0} image to ARGB8", image.getFormat());
+            logger.debug("Converting {} image to ARGB8", image.getFormat());
         }
 
         ByteBuffer bb = image.getData(0);
@@ -213,13 +213,16 @@ public final class ImageUtil {
         int width = original.getWidth();
         int height = original.getHeight();
 
+        int adjustedHeight = height - 1;
+
         // If the height is odd, then the middle one isn't touched (so, all fine :D)
+        height /= 2;
         for(int x = 0; x < width; x++) {
-            for(int y = 1; y <= height / 2; y++) {
+            for(int y = 0; y <= height; y++) {
                 int auxRGBA = original.getRGB(x, y);
 
-                original.setRGB(x, y, original.getRGB(x, height - y));
-                original.setRGB(x, height - y, auxRGBA);
+                original.setRGB(x, y, original.getRGB(x, adjustedHeight - y));
+                original.setRGB(x, adjustedHeight - y, auxRGBA);
             }
         }
 
