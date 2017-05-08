@@ -1352,14 +1352,7 @@ public final class SpatialUtil {
      */
     public static void enableMaterialInstancing(Spatial spatial) {
         if(spatial instanceof Geometry) {
-            Material mat = ((Geometry) spatial).getMaterial();
-            MaterialDef matDef = mat.getMaterialDef();
-
-            if(matDef.getMaterialParam("UseInstancing") == null) {
-                matDef.addMaterialParam(VarType.Boolean, "UseInstancing", false);
-            }
-
-            mat.setBoolean("UseInstancing", true);
+            enableMaterialInstancing(((Geometry) spatial).getMaterial());
             spatial.setBatchHint(Spatial.BatchHint.Inherit);
         } else if (spatial instanceof Node) {
             for (Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
@@ -1370,6 +1363,16 @@ public final class SpatialUtil {
                 enableMaterialInstancing(child);
             }
         }
+    }
+
+    public static void enableMaterialInstancing(Material material) {
+        MaterialDef matDef = material.getMaterialDef();
+
+        if(matDef.getMaterialParam("UseInstancing") == null) {
+            matDef.addMaterialParam(VarType.Boolean, "UseInstancing", false);
+        }
+
+        material.setBoolean("UseInstancing", true);
     }
 
 }
