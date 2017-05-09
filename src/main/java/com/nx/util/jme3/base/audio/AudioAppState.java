@@ -29,6 +29,7 @@ public class AudioAppState extends BaseAppState {
 
         protected void start() {
             startAudio((AudioNode) spatial);
+
             playing = true;
         }
 
@@ -88,15 +89,15 @@ public class AudioAppState extends BaseAppState {
     }
 
     public void addAudioNodeSmart(AudioNode audioNode) {
-        addAudioNode(audioNode, audioNode.isPositional());
+        addAudioNode(audioNode, audioNode.getMaxDistance() != 0, false);
     }
 
-    public void addAudioNode(final AudioNode audioNode, final boolean managePosition) {
-        if(managePosition) {
-            if(!audioNode.isPositional()) {
-                throw new IllegalArgumentException("Only can manage position for positional-looping sounds.");
-            }
-        }
+    public void addAudioNode(AudioNode audioNode, boolean managePosition, boolean instanced) {
+//        if(managePosition) {
+//            if(!audioNode.isPositional()) {
+//                throw new IllegalArgumentException("Only can manage position for positional-looping sounds.");
+//            }
+//        }
 
         audioNode.addControl(managePosition ? new PositionalAudioAutoManager() : new AudioAutoManager());
     }
