@@ -1202,19 +1202,19 @@ public final class SpatialUtil {
             return false;
         }
 
-        outer:
+//        outer:
         for(VertexBuffer vertexBuffer1 : buffers1) {
-            for(VertexBuffer vertexBuffer2 : buffers2) {
-                if(vertexBuffer1.getBufferType() == vertexBuffer2.getBufferType()) {
+            VertexBuffer vertexBuffer2 = mesh2.getBuffer(vertexBuffer1.getBufferType());
+            if(vertexBuffer2 == null) {
+                return false;
+            }
+//            for(VertexBuffer vertexBuffer2 : buffers2) {
+//                if(vertexBuffer1.getBufferType() == vertexBuffer2.getBufferType()) {
                     if(vertexBuffer1.getFormat() != vertexBuffer2.getFormat()) {
                         return false;
                     }
 
                     if(vertexBuffer1.getUsage() != vertexBuffer2.getUsage()) {
-                        return false;
-                    }
-
-                    if(vertexBuffer1.getNumElements() != vertexBuffer2.getNumElements()) {
                         return false;
                     }
 
@@ -1224,6 +1224,23 @@ public final class SpatialUtil {
 
                     Buffer data1 = vertexBuffer1.getData();
                     Buffer data2 = vertexBuffer2.getData();
+
+                    if(data1 == null || data2 == null)  {
+                        if((data1 == null ? 0 : data1.capacity()) != (data2 == null ? 0 : data2.capacity())) {
+                            return false;
+                        }
+
+                        continue;
+                    }
+
+//                    if(vertexBuffer1.getNumElements() != vertexBuffer2.getNumElements()) {
+//                        return false;
+//                    }
+                    if(data1.capacity() != data2.capacity()) {
+                        return false;
+                    }
+
+
 
                     if (data1 instanceof FloatBuffer) {
                         FloatBuffer buf1 = (FloatBuffer) data1;
@@ -1278,12 +1295,9 @@ public final class SpatialUtil {
                     } else {
                         throw new UnsupportedOperationException();
                     }
-
-
-
-                    continue outer;
-                }
-            }
+//                    continue outer;
+//                }
+//            }
 
             return false;
         }
