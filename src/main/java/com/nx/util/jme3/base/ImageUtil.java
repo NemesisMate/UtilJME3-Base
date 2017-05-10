@@ -95,18 +95,30 @@ public final class ImageUtil {
     }
 
     public static BufferedImage getWriteImageFrom(Image image) {
-        int bpp = image.getFormat().getBitsPerPixel();
-        if(bpp == 32) {
-            return getARGB8ImageFrom(image);
-        } else if(bpp == 24) {
-            return getRGBImageFrom(image);
-        }
-
-        throw new IllegalArgumentException();
+        return getARGBImageFrom(image);
+//        int bpp = image.getFormat().getBitsPerPixel();
+//        if(bpp == 32) {
+//            return getARGB8ImageFrom(image);
+//        } else if(bpp == 24) {
+//            return getRGB8ImageFrom(image);
+//        }
+//
+//        throw new IllegalArgumentException();
     }
 
-    public static BufferedImage getARGB8ImageFrom(Image image) {
-        int A, R, G, B;
+
+    public static BufferedImage getARGBImageFrom(Image image) {
+        int bpp = image.getFormat().getBitsPerPixel();
+
+        if(bpp == 32) {
+            bpp = BufferedImage.TYPE_INT_ARGB;
+        } else if(bpp == 24) {
+            bpp = BufferedImage.TYPE_INT_RGB;
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        int A = 0, R, G, B;
         switch (image.getFormat()) {
             case RGBA8:
                 R = 0; G = 1; B = 2; A = 3;
@@ -120,37 +132,6 @@ public final class ImageUtil {
             case BGRA8:
                 B = 0; G = 1; R = 2; A = 3;
                 break;
-            default:
-                throw new IllegalArgumentException();
-        }
-
-        if(logger.isDebugEnabled()) {
-            logger.debug("Converting {} image to ARGB8", image.getFormat());
-        }
-
-        ByteBuffer bb = image.getData(0);
-        bb.clear();
-
-        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        int[] raw = new int[bb.limit()];
-        for (int i = 0; i < bb.limit() / 4; i++) {
-            raw[i] = ((bb.get(4 * i + B) & 0xFF)) |
-                    ((bb.get(4 * i + A) & 0xFF) << 24) |
-                    ((bb.get(4 * i + R) & 0xFF) << 16) |
-                    ((bb.get(4 * i + G) & 0xFF) << 8);
-
-        }
-        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
-
-        awtImage = verticalFlip(awtImage);
-
-        return awtImage;
-    }
-
-
-    public static BufferedImage getRGBImageFrom(Image image) {
-        int R, G, B;
-        switch (image.getFormat()) {
             case RGB8:
                 R = 0; G = 1; B = 2;
                 break;
@@ -161,16 +142,22 @@ public final class ImageUtil {
                 throw new IllegalArgumentException();
         }
 
+
+
+        if(logger.isDebugEnabled()) {
+            logger.debug("Converting {} image to ARGB", image.getFormat());
+        }
+
         ByteBuffer bb = image.getData(0);
         bb.clear();
 
-        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        int[] raw = new int[bb.limit() * 4 / 3];
-        for (int i = 0; i < bb.limit() / 3; i++) {
-            raw[i] = 0xFF000000 | // Maybe not needed for rgb, but it doesn't annoy anyone, and so, it can be used as ARGB too.
-                    ((bb.get(3 * i + R) & 0xFF) << 16) |
-                    ((bb.get(3 * i + G) & 0xFF) << 8) |
-                    ((bb.get(3 * i + B) & 0xFF));
+        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), bpp);
+        int[] raw = new int[bb.limit()];
+        for (int i = 0; i < bb.limit() / 4; i++) {
+            raw[i] = ((bb.get(4 * i + A) & 0xFF) << 24) |
+                     ((bb.get(4 * i + R) & 0xFF) << 16) |
+                     ((bb.get(4 * i + G) & 0xFF) << 8) |
+                     ((bb.get(4 * i + B) & 0xFF));
         }
         awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
 
@@ -179,10 +166,84 @@ public final class ImageUtil {
         return awtImage;
     }
 
+//    public static BufferedImage getARGB8ImageFrom(Image image) {
+//        int A, R, G, B;
+//        switch (image.getFormat()) {
+//            case RGBA8:
+//                R = 0; G = 1; B = 2; A = 3;
+//                break;
+//            case ABGR8:
+//                A = 0; B = 1; G = 2; R = 3;
+//                break;
+//            case ARGB8:
+//                A = 0; R = 1; G = 2; B = 3;
+//                break;
+//            case BGRA8:
+//                B = 0; G = 1; R = 2; A = 3;
+//                break;
+//            default:
+//                throw new IllegalArgumentException();
+//        }
+//
+//        if(logger.isDebugEnabled()) {
+//            logger.debug("Converting {} image to ARGB8", image.getFormat());
+//        }
+//
+//        ByteBuffer bb = image.getData(0);
+//        bb.clear();
+//
+//        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+//        int[] raw = new int[bb.limit()];
+//        for (int i = 0; i < bb.limit() / 4; i++) {
+//            raw[i] = ((bb.get(4 * i + B) & 0xFF)) |
+//                    ((bb.get(4 * i + A) & 0xFF) << 24) |
+//                    ((bb.get(4 * i + R) & 0xFF) << 16) |
+//                    ((bb.get(4 * i + G) & 0xFF) << 8);
+//
+//        }
+//        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
+//
+//        awtImage = verticalFlip(awtImage);
+//
+//        return awtImage;
+//    }
+//
+//
+//    public static BufferedImage getRGB8ImageFrom(Image image) {
+//        int R, G, B;
+//        switch (image.getFormat()) {
+//            case RGB8:
+//                R = 0; G = 1; B = 2;
+//                break;
+//            case BGR8:
+//                B = 0; G = 1; R = 2;
+//                break;
+//            default:
+//                throw new IllegalArgumentException();
+//        }
+//
+//        ByteBuffer bb = image.getData(0);
+//        bb.clear();
+//
+//        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+//        int[] raw = new int[bb.limit() * 4 / 3];
+//        for (int i = 0; i < bb.limit() / 3; i++) {
+//            raw[i] = 0xFF000000 | // Maybe not needed for rgb, but it doesn't annoy anyone, and so, it can be used as ARGB too.
+//                    ((bb.get(3 * i + R) & 0xFF) << 16) |
+//                    ((bb.get(3 * i + G) & 0xFF) << 8) |
+//                    ((bb.get(3 * i + B) & 0xFF));
+//        }
+//        awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
+//
+//        awtImage = verticalFlip(awtImage);
+//
+//        return awtImage;
+//    }
+
     @Deprecated
     public static BufferedImage getARGB8ImageFromABGR8(Image image) {
 
-        return getARGB8ImageFrom(image);
+        return getARGBImageFrom(image);
 //        ByteBuffer bb = image.getData(0);
 //        bb.clear();
 //
