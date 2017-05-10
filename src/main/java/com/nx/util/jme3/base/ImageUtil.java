@@ -167,12 +167,14 @@ public final class ImageUtil {
         BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
         int[] raw = new int[bb.limit() * 4 / 3];
         for (int i = 0; i < bb.limit() / 3; i++) {
-            raw[i] = 0xFF000000 |
+            raw[i] = 0xFF000000 | // Maybe not needed for rgb, but it doesn't annoy anyone, and so, it can be used as ARGB too.
                     ((bb.get(3 * i + R) & 0xFF) << 16) |
                     ((bb.get(3 * i + G) & 0xFF) << 8) |
                     ((bb.get(3 * i + B) & 0xFF));
         }
         awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
+
+        awtImage = verticalFlip(awtImage);
 
         return awtImage;
     }
