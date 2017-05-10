@@ -1389,4 +1389,23 @@ public final class SpatialUtil {
         material.setBoolean("UseInstancing", true);
     }
 
+    public static void addPositionToVertexBuffer(Vector3f position, Mesh mesh, VertexBuffer.Type bufferType) {
+        if(bufferType == null) {
+            bufferType = VertexBuffer.Type.TexCoord8;
+        }
+
+        int elements = mesh.getVertexCount();
+        int components = 3;
+
+        float[] bufferData = new float[elements * components];
+
+        for(int i = 0; i < elements; i+=3) {
+            bufferData[i] = position.x;
+            bufferData[i+1] = position.y;
+            bufferData[i+2] = position.z;
+        }
+
+        mesh.setBuffer(bufferType, components, bufferData);
+    }
+
 }
