@@ -110,11 +110,7 @@ public final class ImageUtil {
     public static BufferedImage getARGBImageFrom(Image image) {
         int bpp = image.getFormat().getBitsPerPixel();
 
-        if(bpp == 32) {
-            bpp = BufferedImage.TYPE_INT_ARGB;
-        } else if(bpp == 24) {
-            bpp = BufferedImage.TYPE_INT_RGB;
-        } else {
+        if(bpp != 32 && bpp != 24) {
             throw new IllegalArgumentException();
         }
 
@@ -151,9 +147,14 @@ public final class ImageUtil {
         ByteBuffer bb = image.getData(0);
         bb.clear();
 
-        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), bpp);
-        int[] raw = new int[bb.limit()];
-        for (int i = 0; i < bb.limit() / 4; i++) {
+        BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), bpp == 32 ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+
+        int channels = bpp / 8;
+        int steps = bb.limit() / channels;
+
+        int[] raw = new int[steps * 4];
+
+        for (int i = 0; i < steps; i++) {
             raw[i] = ((bb.get(4 * i + A) & 0xFF) << 24) |
                      ((bb.get(4 * i + R) & 0xFF) << 16) |
                      ((bb.get(4 * i + G) & 0xFF) << 8) |
