@@ -1408,4 +1408,18 @@ public final class SpatialUtil {
         mesh.setBuffer(bufferType, components, bufferData);
     }
 
+    public static Boolean getBooleanFromData(Object userData, Boolean defaultValue) {
+        if(userData == null) {
+            return defaultValue;
+        }
+
+        if(userData instanceof Boolean) {
+            return (Boolean) userData;
+        } else if(userData instanceof Integer) {
+            return (Integer) userData > 0;
+        }
+
+        throw new IllegalArgumentException();
+    }
+
 }

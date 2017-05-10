@@ -168,9 +168,9 @@ public final class ImageUtil {
         int[] raw = new int[bb.limit() * 4 / 3];
         for (int i = 0; i < bb.limit() / 3; i++) {
             raw[i] = 0xFF000000 |
-                    ((bb.get(3 * i + B) & 0xFF) << 16) |
+                    ((bb.get(3 * i + R) & 0xFF) << 16) |
                     ((bb.get(3 * i + G) & 0xFF) << 8) |
-                    ((bb.get(3 * i + R) & 0xFF));
+                    ((bb.get(3 * i + B) & 0xFF));
         }
         awtImage.setRGB(0, 0, image.getWidth(), image.getHeight(), raw, 0, image.getWidth());
 
