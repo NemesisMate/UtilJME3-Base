@@ -79,8 +79,12 @@ public class SingleLinkMaterializedNode extends SingleLinkNode {
 //
 //                assetManager.addToCache(material);
                 material = im.getAssetManager().loadAsset(materialKey);
-//                material.setKey(materialKey);
             }
+
+            if(material.getKey() == null) {
+                material.setKey(materialKey);
+            }
+
             assetChild.setMaterial(material);
         }
 
