@@ -196,6 +196,7 @@ public class SingleLinkNode extends Node {
                     loaderManager.addToCache(assetLoaderKey, assetChild);
                 } else {
                     assetChild = assetChild.clone();
+                    assetChild.setKey(assetLoaderKey);
                     LoggerFactory.getLogger(this.getClass()).debug("YEI!, loaded from cache!!!");
                 }
 //                assetChild = (Spatial) importer.load(info);

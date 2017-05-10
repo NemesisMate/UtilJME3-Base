@@ -1299,7 +1299,7 @@ public final class SpatialUtil {
 //                }
 //            }
 
-            return false;
+//            return false;
         }
 
         return true;
