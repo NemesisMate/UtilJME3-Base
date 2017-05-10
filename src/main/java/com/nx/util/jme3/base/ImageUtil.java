@@ -194,8 +194,11 @@ public final class ImageUtil {
         bb.clear();
 
         BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        int steps = bb.limit() / 4;
         int[] raw = new int[bb.limit()];
-        for (int i = 0; i < bb.limit() / 4; i++) {
+
+        for (int i = 0; i < steps; i++) {
             raw[i] = ((bb.get(4 * i + B) & 0xFF)) |
                     ((bb.get(4 * i + A) & 0xFF) << 24) |
                     ((bb.get(4 * i + R) & 0xFF) << 16) |
@@ -227,8 +230,11 @@ public final class ImageUtil {
         bb.clear();
 
         BufferedImage awtImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
-        int[] raw = new int[bb.limit() * 4 / 3];
-        for (int i = 0; i < bb.limit() / 3; i++) {
+
+        int steps = bb.limit() / 3;
+        int[] raw = new int[steps * 4]; // this is like: bb.limit() * 4 / 3
+
+        for (int i = 0; i < steps; i++) {
             raw[i] = 0xFF000000 | // Maybe not needed for rgb, but it doesn't annoy anyone, and so, it can be used as ARGB too.
                     ((bb.get(3 * i + R) & 0xFF) << 16) |
                     ((bb.get(3 * i + G) & 0xFF) << 8) |
