@@ -1415,8 +1415,46 @@ public final class SpatialUtil {
 
         if(userData instanceof Boolean) {
             return (Boolean) userData;
+        } else {
+            return getFloatFromData(userData, null) > 0;
+        }
+    }
+
+    public static Float getFloatFromData(Object userData, Float defaultValue) {
+        if(userData == null) {
+            return defaultValue;
+        }
+
+        if(userData instanceof Float) {
+            return (Float) userData;
         } else if(userData instanceof Integer) {
-            return (Integer) userData > 0;
+            return ((Integer) userData).floatValue();
+        } else if(userData instanceof Short) {
+            return ((Short) userData).floatValue();
+        } else if(userData instanceof Byte) {
+            return ((Byte) userData).floatValue();
+        } else if(userData instanceof Double) {
+            return ((Double) userData).floatValue();
+        }
+
+        throw new IllegalArgumentException();
+    }
+
+    public static Integer getIntegerFromData(Object userData, Integer defaultValue) {
+        if(userData == null) {
+            return defaultValue;
+        }
+
+        if(userData instanceof Integer) {
+            return (Integer) userData;
+        } else if(userData instanceof Float) {
+            return ((Float) userData).intValue();
+        } else if(userData instanceof Short) {
+            return ((Short) userData).intValue();
+        } else if(userData instanceof Byte) {
+            return ((Byte) userData).intValue();
+        } else if(userData instanceof Double) {
+            return ((Double) userData).intValue();
         }
 
         throw new IllegalArgumentException();
