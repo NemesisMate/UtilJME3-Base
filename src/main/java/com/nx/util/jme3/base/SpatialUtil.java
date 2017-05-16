@@ -7,6 +7,7 @@ import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
 import com.jme3.bounding.BoundingVolume;
 import com.jme3.collision.Collidable;
+import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapFont;
 import com.jme3.material.Material;
@@ -1160,7 +1161,7 @@ public final class SpatialUtil {
         }
 
         int total = bv.collideWith(other, results);
-        if(total != 0) {
+        if(total == 0) {
             return total;
         }
 
@@ -1168,9 +1169,37 @@ public final class SpatialUtil {
             for(Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
                 total += collidesWithBounds(other, results, child);
             }
+        } else {
+            int size = results.size();
+            for (int i = size - total; i < size; i++) {
+                results.getCollisionDirect(i).setGeometry((Geometry) spatial);
+            }
         }
 
         return total;
+    }
+
+    public static int collidesWithGeometryBounds(Collidable other, CollisionResults geometryResults, Spatial spatial) {
+        CollisionResults allResults = new CollisionResults();
+        if(collidesWithBounds(other, allResults, spatial) != 0) {
+            toGeometryResults(allResults, geometryResults);
+        }
+
+        return geometryResults.size();
+    }
+
+    public static CollisionResults toGeometryResults(CollisionResults allResults, CollisionResults geometryResults) {
+        if(geometryResults == null) {
+            geometryResults = new CollisionResults();
+        }
+
+        for(CollisionResult result : allResults) {
+            if(result.getGeometry() != null) {
+                geometryResults.addCollision(result);
+            }
+        }
+
+        return geometryResults;
     }
 
 
