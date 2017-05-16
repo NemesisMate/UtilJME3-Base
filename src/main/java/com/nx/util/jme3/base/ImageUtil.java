@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -85,6 +86,17 @@ public final class ImageUtil {
 //
 //        return awtImage;
 //    }
+
+    public static void writeImage(Image image, File file) throws IOException {
+        FileOutputStream outStream = new FileOutputStream(file);
+        try {
+            writeImage(image, outStream);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            outStream.close();
+        }
+    }
 
     public static void writeImage(Image image, FileOutputStream saveStream) throws IOException {
         writeImage(getWriteImageFrom(image), saveStream);
