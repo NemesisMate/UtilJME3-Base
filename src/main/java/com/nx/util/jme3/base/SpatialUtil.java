@@ -10,6 +10,7 @@ import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapFont;
+import com.jme3.material.MatParam;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialDef;
 import com.jme3.math.ColorRGBA;
@@ -1487,6 +1488,16 @@ public final class SpatialUtil {
         }
 
         throw new IllegalArgumentException();
+    }
+
+    public static void copyMaterialParams(Material fromMaterial, Material toMaterial) {
+        for(MatParam fromParam: fromMaterial.getParams()) {
+            MatParam toParam = toMaterial.getMaterialDef().getMaterialParam(fromParam.getName());
+
+            if(toParam != null) {
+                toMaterial.setParam(fromParam.getName(), fromParam.getVarType(), fromParam.getValue());
+            }
+        }
     }
 
 }
