@@ -93,6 +93,25 @@ public final class SceneUtil {
         return result;
     }
 
+    public static Vector3f getMouseDirection(InputManager inputManager, Camera cam, Vector3f dirStore) {
+        return getMouseDirection(inputManager.getCursorPosition(), cam, dirStore);
+    }
+
+    public static Vector3f getMouseDirection(Vector2f pos2d, Camera cam, Vector3f dirStore) {
+        if(dirStore == null) {
+            dirStore = new Vector3f();
+        }
+
+        TempVars vars = TempVars.get();
+
+        Vector3f click3d = cam.getWorldCoordinates(vars.vect2d.set(pos2d.x, pos2d.y), 0f, vars.vect1);
+        // Aim the ray from the clicked spot forwards.
+        cam.getWorldCoordinates(vars.vect2d, 1f, dirStore).subtractLocal(click3d).normalizeLocal();
+
+        vars.release();
+
+        return dirStore;
+    }
 //    private static CollisionResults getClickResults(InputManager inputManager, Camera cam, Spatial spat, CollisionResults localResults, Ray localRay) {
 //        return getClickResults(inputManager.getCursorPosition(), cam, spat, localResults, localRay);
 //    }
