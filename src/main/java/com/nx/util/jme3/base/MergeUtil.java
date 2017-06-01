@@ -29,6 +29,7 @@ import java.util.*;
 
 /**
  * //TODO: improvement: remove vertexes dups.
+ * //TODO: Efficiency: change all put(index, value) by put(value). It's faster.
  * @author NemesisMate
  */
 public final class MergeUtil {
