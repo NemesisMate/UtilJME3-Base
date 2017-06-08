@@ -16,6 +16,9 @@ import com.jme3.material.MaterialDef;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
+import com.jme3.math.Vector4f;
+import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.ViewPort;
 import com.jme3.scene.*;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
@@ -23,6 +26,8 @@ import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.shader.VarType;
+import com.jme3.texture.Image;
+import com.jme3.texture.Texture;
 import com.jme3.util.SafeArrayList;
 import jme3tools.optimize.GeometryBatchFactory;
 import org.slf4j.LoggerFactory;
@@ -1499,5 +1504,125 @@ public final class SpatialUtil {
             }
         }
     }
+
+
+
+
+    // --- START TEXCOORDS AREA ---- //
+
+
+
+    public static float[] getTexCoordsForAtlas(Vector4f coords, Image image) {
+        return getTexCoordsForAtlas(coords, image.getWidth(), image.getHeight());
+    }
+
+    public static float[] getTexCoordsForAtlas(Vector4f coords, float imageWidth, float imageHeight) {
+        float x0 = coords.x / imageWidth;
+        float y1 = (imageHeight - coords.y) / imageHeight;
+        float x1 = coords.z / imageWidth;
+        float y0 = (imageHeight - coords.w) / imageHeight;
+
+        return new float[] {
+                x0, y0,
+                x1, y0,
+                x1, y1,
+                x0, y1
+        };
+    }
+
+    public static void setTexCoordsForAtlas(Mesh mesh, Vector4f coords, Image image) {
+        setTexCoordsForAtlas(mesh, null, coords, image.getWidth(), image.getHeight());
+    }
+
+    public static void setTexCoordsForAtlas(Mesh mesh, Vector4f coords, float imageWidth, float imageHeight) {
+        setTexCoordsForAtlas(mesh, null, coords, imageWidth, imageHeight);
+    }
+
+    public static void setTexCoordsForAtlas(Mesh mesh, VertexBuffer.Type type, Vector4f coords, Image image) {
+        setTexCoordsForAtlas(mesh, type, coords, image.getWidth(), image.getHeight());
+    }
+
+    public static void setTexCoordsForAtlas(Mesh mesh, VertexBuffer.Type type, Vector4f coords, float imageWidth, float imageHeight) {
+        if(type == null) {
+            type = VertexBuffer.Type.TexCoord;
+        }
+
+        mesh.setBuffer(type, 2, getTexCoordsForAtlas(coords, imageWidth, imageHeight));
+    }
+
+    public static void setTexCoordsForAtlas(Geometry geometry, Texture texture, Vector4f texCoords) {
+        Image image = texture.getImage();
+        setTexCoordsForAtlas(geometry.getMesh(), null, texCoords, image.getWidth(), image.getHeight());
+    }
+
+
+
+
+    // --- END TEXCOORDS AREA ---- //
+
+
+
+    public static void setWorldTranslation(Spatial spatial, Vector3f translation) {
+        Vector3f worldTranslation = spatial.getWorldTranslation();
+        spatial.setLocalTranslation(spatial.getLocalTranslation().addLocal(translation.subtract(worldTranslation, worldTranslation)));
+    }
+
+
+
+
+    public static Control createControlFollow(Vector3f toFollow) {
+        return new FollowControl(toFollow);
+    }
+
+    public static Control createControlFollowOffset(Vector3f toFollow, Vector3f offset) {
+        return new FollowOffsetControl(toFollow, offset);
+    }
+
+
+
+
+
+
+
+    public static class FollowControl extends AbstractControl {
+
+        protected Vector3f toFollow;
+
+        public FollowControl(Vector3f toFollow) {
+            this.toFollow = toFollow;
+        }
+
+        @Override
+        protected void controlUpdate(float tpf) {
+            followTranslate();
+        }
+
+        protected void followTranslate() {
+            spatial.setLocalTranslation(toFollow);
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) {
+
+        }
+    }
+
+    //TODO: Move to SpatialUtil
+    public static class FollowOffsetControl extends FollowControl {
+
+        protected Vector3f offset;
+
+        public FollowOffsetControl(Vector3f toFollow, Vector3f offset) {
+            super(toFollow);
+
+            this.offset = offset;
+        }
+
+        @Override
+        protected void followTranslate() {
+            spatial.setLocalTranslation(toFollow.add(offset, spatial.getLocalTranslation()));
+        }
+    }
+
 
 }

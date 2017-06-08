@@ -261,5 +261,19 @@ public final class SceneUtil {
 
     }
 
+
+    public static float distanceSquared2D(Vector3f position1, Vector3f position2) {
+        float dx = position1.x - position2.x;
+        float dz = position1.z - position2.z;
+
+        return dx * dx + dz * dz;
+    }
+
+    public static float distance2D(Vector3f position1, Vector3f position2) {
+        float dx = position1.x - position2.x;
+        float dz = position1.z - position2.z;
+
+        return FastMath.sqrt(dx * dx + dz * dz);
+    }
     
 }
