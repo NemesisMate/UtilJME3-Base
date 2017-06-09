@@ -1556,8 +1556,6 @@ public final class SpatialUtil {
     }
 
 
-
-
     // --- END TEXCOORDS AREA ---- //
 
 
