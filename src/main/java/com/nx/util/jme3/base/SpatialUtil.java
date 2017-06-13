@@ -1576,12 +1576,6 @@ public final class SpatialUtil {
         return new FollowOffsetControl(toFollow, offset);
     }
 
-
-
-
-
-
-
     public static class FollowControl extends AbstractControl {
 
         protected Vector3f toFollow;
@@ -1592,10 +1586,6 @@ public final class SpatialUtil {
 
         @Override
         protected void controlUpdate(float tpf) {
-            followTranslate();
-        }
-
-        protected void followTranslate() {
             spatial.setLocalTranslation(toFollow);
         }
 
@@ -1617,7 +1607,7 @@ public final class SpatialUtil {
         }
 
         @Override
-        protected void followTranslate() {
+        protected void controlUpdate(float tpf) {
             spatial.setLocalTranslation(toFollow.add(offset, spatial.getLocalTranslation()));
         }
     }
