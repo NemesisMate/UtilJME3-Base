@@ -174,6 +174,19 @@ public final class SpatialUtil {
         return lines;
     }
 
+    public static <T extends Spatial> T gatherFirstSpatialAncestor(Spatial spatial, Class<T> type) {
+        if(type.isAssignableFrom(spatial.getClass())) {
+            return (T) spatial;
+        }
+
+        Spatial parent = spatial.getParent();
+        if(parent == null) {
+            return null;
+        }
+
+        return gatherFirstSpatialAncestor(parent, type);
+    }
+
     public static <T extends Spatial> T gatherFirstSpatial(Spatial spatial, Class<T> type) {
         if(type.isAssignableFrom(spatial.getClass())) {
             return (T) spatial;
