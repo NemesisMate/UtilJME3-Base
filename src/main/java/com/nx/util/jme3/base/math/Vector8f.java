@@ -1,4 +1,4 @@
-package com.nx.util.jme3.base;
+package com.nx.util.jme3.base.math;
 
 /**
  * Created by NemesisMate on 23/03/17.

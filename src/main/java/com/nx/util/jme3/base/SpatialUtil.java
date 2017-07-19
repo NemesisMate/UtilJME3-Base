@@ -2,6 +2,7 @@ package com.nx.util.jme3.base;
 
 import com.jme3.animation.AnimControl;
 import com.jme3.animation.Bone;
+import com.jme3.animation.Skeleton;
 import com.jme3.animation.SkeletonControl;
 import com.jme3.asset.AssetManager;
 import com.jme3.bounding.BoundingBox;
@@ -30,6 +31,7 @@ import com.jme3.texture.Image;
 import com.jme3.texture.Texture;
 import com.jme3.util.SafeArrayList;
 import jme3tools.optimize.GeometryBatchFactory;
+import jme3tools.optimize.TextureAtlas;
 import org.slf4j.LoggerFactory;
 
 import java.nio.*;
@@ -172,7 +174,32 @@ public final class SpatialUtil {
         return lines;
     }
 
+    public static <T extends Spatial> T gatherFirstSpatial(Spatial spatial, Class<T> type) {
+        if(type.isAssignableFrom(spatial.getClass())) {
+            return (T) spatial;
+        }
 
+        if (spatial instanceof Node) {
+            for (Spatial child : ((SafeArrayList<Spatial>)((Node)spatial).getChildren()).getArray()) {
+                return gatherFirstSpatial(child, type);
+            }
+        }
+
+        return null;
+    }
+
+    public static void gatherSpatials(Spatial spatial, Class<? extends Spatial> type, List store) {
+        if(type.isAssignableFrom(spatial.getClass())) {
+            store.add(spatial);
+        }
+
+        if (spatial instanceof Node) {
+            Node node = (Node) spatial;
+            for (Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
+                gatherSpatials(child, type, store);
+            }
+        }
+    }
 
     public static Geometry gatherFirstGeom(Spatial spatial) {
         if (spatial instanceof Node) {
@@ -1561,10 +1588,45 @@ public final class SpatialUtil {
 
 
     public static void setWorldTranslation(Spatial spatial, Vector3f translation) {
-        Vector3f worldTranslation = spatial.getWorldTranslation();
-        spatial.setLocalTranslation(spatial.getLocalTranslation().addLocal(translation.subtract(worldTranslation, worldTranslation)));
+        Vector3f worldTranslation = Vector3f.ZERO;
+        Vector3f worldScale = Vector3f.UNIT_XYZ;
+
+        Spatial parent = spatial.getParent();
+        if(parent != null) {
+            worldTranslation = parent.getWorldTranslation();
+            worldScale = parent.getWorldScale();
+        }
+
+        spatial.setLocalTranslation(
+                spatial.getLocalTranslation().set(
+                        // spatial.getWorldTranslation is being used as an aux.
+                        spatial.getWorldTranslation().set(Vector3f.UNIT_XYZ).divideLocal(worldScale).multLocal(translation).subtractLocal(worldTranslation)
+                )
+        );
     }
 
+    public static Vector3f getBoneWorldTranslation(Spatial spatial, String boneName, Vector3f store) {
+        return getBoneWorldTranslation(SpatialUtil.getFirstControlFor(spatial, SkeletonControl.class), boneName, store);
+    }
+
+    public static Vector3f getBoneWorldTranslation(SkeletonControl skeletonControl, String boneName, Vector3f store) {
+        if(store == null) {
+            store = new Vector3f();
+        }
+
+        Skeleton skeleton = skeletonControl.getSkeleton();
+        Bone bone = skeleton.getBone(boneName);
+
+        bone.getLocalPosition().add(skeletonControl.getSpatial().getWorldTranslation(), store);
+
+        return store;
+    }
+
+    public static void setPositionFromBone(Spatial toSpatial, Spatial fromSpatial, String fromBone) {
+        Vector3f position = toSpatial.getLocalTranslation();
+        getBoneWorldTranslation(fromSpatial, fromBone, position);
+        toSpatial.setLocalTranslation(position);
+    }
 
 
 
@@ -1574,6 +1636,14 @@ public final class SpatialUtil {
 
     public static Control createControlFollowOffset(Vector3f toFollow, Vector3f offset) {
         return new FollowOffsetControl(toFollow, offset);
+    }
+
+    public static Control createControlTimer(float time) {
+        return new TimerControl(time);
+    }
+
+    public static Control createControlTimerLeave(float time) {
+        return new TimerLeaveControl(time);
     }
 
     public static class FollowControl extends AbstractControl {
@@ -1612,5 +1682,102 @@ public final class SpatialUtil {
         }
     }
 
+    public static class TimerControl extends AbstractControl {
 
+        float time;
+        float elapsed;
+
+        public TimerControl() {
+        }
+
+        public TimerControl(float time) {
+            this.time = time;
+        }
+
+        public void resetTime() {
+            elapsed = 0;
+        }
+
+        public float getTime() {
+            return time;
+        }
+
+        public void setTime(float time) {
+            this.time = time;
+        }
+
+        @Override
+        protected void controlUpdate(float tpf) {
+            elapsed += tpf;
+            if(elapsed >= time) {
+                onTimeCompleted();
+                resetTime();
+            }
+        }
+
+        protected void onTimeCompleted() {
+
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) { }
+    }
+
+    public static class TimerLeaveControl extends TimerControl {
+        public TimerLeaveControl() {
+            super();
+        }
+
+        public TimerLeaveControl(float time) {
+            super(time);
+        }
+
+        @Override
+        protected void onTimeCompleted() {
+            this.spatial.removeFromParent();
+        }
+    }
+
+
+
+
+
+    // Buffers
+    public static void offsetBuffer(Geometry geometry, VertexBuffer.Type bufferType, float... values) {
+        offsetBuffer(geometry.getMesh(), bufferType, values);
+    }
+
+    public static void offsetBuffer(Mesh mesh, VertexBuffer.Type bufferType, float... values) {
+        Objects.requireNonNull(values);
+
+        VertexBuffer vb = mesh.getBuffer(bufferType);
+
+        FloatBuffer floatBuffer = (FloatBuffer) vb.getData();
+        floatBuffer.rewind();
+
+        int limit = floatBuffer.limit();
+        int steps = vb.getNumComponents() - values.length;
+
+        for (int i = 0; i < limit; i += steps) {
+            for(float value : values) {
+                floatBuffer.put(i, floatBuffer.get(i++) + value);
+            }
+        }
+
+    }
+
+
+
+
+    // Textures
+    public static Vector4f getTexCoordsFromAtlasTile(TextureAtlas.TextureAtlasTile atlasTile, Vector4f store) {
+        if(store == null) {
+            store = new Vector4f();
+        }
+
+        float x = atlasTile.getX();
+        float y = atlasTile.getY();
+
+        return store.set(x, y, x + atlasTile.getWidth(), y + atlasTile.getHeight());
+    }
 }
