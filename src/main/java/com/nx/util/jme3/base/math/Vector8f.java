@@ -1,6 +1,7 @@
 package com.nx.util.jme3.base.math;
 
 /**
+ * TODO: This class should be named differently
  * Created by NemesisMate on 23/03/17.
  */
 public class Vector8f {
@@ -10,6 +11,8 @@ public class Vector8f {
     public float z, w;
 
     public int r, g, b, a;
+
+    public Vector8f() {}
 
     public Vector8f(int x, int y, float z, float w, int r, int g, int b, int a) {
         this.x = x;
