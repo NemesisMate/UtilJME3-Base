@@ -442,6 +442,35 @@ public final class SpatialUtil {
         return null;
     }
 
+    public static Spatial findEndsWith(Spatial spatial, final String name) {
+        if(spatial != null) {
+            String spatName = spatial.getName();
+            if(spatName != null && spatName.endsWith(name)) return spatial;
+//            if(task instanceof Node) return nodeFind((Node)task, name);
+            if(spatial instanceof Node) {
+                return findEndsWith((Node)spatial, name);
+            }
+        }
+
+        return null;
+    }
+
+    public static Spatial findEndsWith(Node node, String name) {
+        for (Spatial child : ((SafeArrayList<Spatial>)node.getChildren()).getArray()) {
+            String spatName = child.getName();
+            if (spatName != null && spatName.endsWith(name)) {
+                return child;
+            } else if(child instanceof Node) {
+                Spatial out = findEndsWith((Node)child, name);
+                if(out != null) {
+                    return out;
+                }
+            }
+        }
+
+        return null;
+    }
+
 
     public static String getUserDataKeyStartsWith(Spatial spatial, final String name) {
         Collection<String> keys = spatial.getUserDataKeys();
@@ -1454,6 +1483,31 @@ public final class SpatialUtil {
         }
     }
 
+    public static void disableMaterialInstancing(Spatial spatial) {
+        if(spatial instanceof Geometry) {
+            disableMaterialInstancing(((Geometry) spatial).getMaterial());
+            spatial.setBatchHint(Spatial.BatchHint.Inherit);
+        } else if (spatial instanceof Node) {
+            for (Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
+                if (child instanceof GeometryGroupNode) {
+                    continue;
+                }
+
+                disableMaterialInstancing(child);
+            }
+        }
+    }
+
+    public static boolean isMaterialInstancingEnabled(Material material) {
+        MatParam matParam = material.getParam("UseInstancing");
+
+        return matParam != null && (Boolean) matParam.getValue();
+//        MatParam matParam;
+//        return material.getMaterialDef().getMaterialParam("UseInstancing") != null
+//                && (matParam = material.getParam("UseInstancing")) != null
+//                && (Boolean) matParam.getValue();
+    }
+
     public static void enableMaterialInstancing(Material material) {
         MaterialDef matDef = material.getMaterialDef();
 
@@ -1462,6 +1516,30 @@ public final class SpatialUtil {
         }
 
         material.setBoolean("UseInstancing", true);
+    }
+
+    public static void disableMaterialInstancing(Material material) {
+        MaterialDef matDef = material.getMaterialDef();
+
+        if(matDef.getMaterialParam("UseInstancing") != null) {
+            material.setBoolean("UseInstancing", false);
+        }
+    }
+
+    public static void setMaterialInstancing(Material material, boolean enabled) {
+        if(enabled) {
+            enableMaterialInstancing(material);
+        } else {
+            disableMaterialInstancing(material);
+        }
+    }
+
+    public static void setMaterialInstancing(Spatial spatial, boolean enabled) {
+        if(enabled) {
+            enableMaterialInstancing(spatial);
+        } else {
+
+        }
     }
 
     public static void addPositionToVertexBuffer(Vector3f position, Mesh mesh, VertexBuffer.Type bufferType) {
@@ -1763,6 +1841,19 @@ public final class SpatialUtil {
     public static void offsetBuffer(Mesh mesh, VertexBuffer.Type bufferType, float... values) {
         Objects.requireNonNull(values);
 
+        switch (bufferType) {
+            case TexCoord:
+            case TexCoord2:
+            case TexCoord3:
+            case TexCoord4:
+            case TexCoord5:
+            case TexCoord6:
+            case TexCoord7:
+            case TexCoord8:
+                offsetTexcoordBuffer(mesh, bufferType, values);
+                return;
+        }
+
         VertexBuffer vb = mesh.getBuffer(bufferType);
 
         FloatBuffer floatBuffer = (FloatBuffer) vb.getData();
@@ -1776,7 +1867,27 @@ public final class SpatialUtil {
                 floatBuffer.put(i, floatBuffer.get(i++) + value);
             }
         }
+    }
 
+    public static void offsetTexcoordBuffer(FloatBuffer buffer, float... values) {
+        if(values.length == 1) {
+            for (int i = 0; i < buffer.capacity(); i++) {
+                buffer.put(i, buffer.get(i) + values[0]);
+            }
+        } else if(values.length == 2) {
+            for (int i = 0; i < buffer.capacity(); i++) {
+                buffer.put(i, buffer.get(i) + values[0]);
+                buffer.put(i, buffer.get(i++) + values[1]);
+            }
+        } else {
+            throw new IllegalArgumentException("Texcoord has 2 components. Give between 0 and 1 of them.");
+        }
+    }
+
+
+
+    public static void offsetTexcoordBuffer(Mesh mesh, VertexBuffer.Type bufferType, float... values) {
+        offsetTexcoordBuffer(mesh.getFloatBuffer(bufferType), values);
     }
 
 
