@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SpatialAutoManager extends AbstractControl {
 
-    ScenegraphAutoRemoverChecker checker;
+    private ScenegraphAutoRemoverChecker checker;
 
     public abstract void onAttached();
     public abstract void onDetached();
@@ -82,10 +82,14 @@ public abstract class SpatialAutoManager extends AbstractControl {
         protected void controlUpdate(float tpf) {
             if(flagged) {
                 detach();
-                spatial.removeControl(this);
             } else {
                 flagged = true;
             }
+        }
+
+        public void detach() {
+            SpatialAutoManager.this.detach();
+            spatial.removeControl(this);
         }
 
         @Override
