@@ -1841,6 +1841,12 @@ public final class SpatialUtil {
     public static void offsetBuffer(Mesh mesh, VertexBuffer.Type bufferType, float... values) {
         Objects.requireNonNull(values);
 
+        VertexBuffer vb = mesh.getBuffer(bufferType);
+        FloatBuffer floatBuffer = (FloatBuffer) vb.getData();
+        floatBuffer.rewind();
+
+        vb.setUpdateNeeded();
+
         switch (bufferType) {
             case TexCoord:
             case TexCoord2:
@@ -1853,11 +1859,6 @@ public final class SpatialUtil {
                 offsetTexcoordBuffer(mesh, bufferType, values);
                 return;
         }
-
-        VertexBuffer vb = mesh.getBuffer(bufferType);
-
-        FloatBuffer floatBuffer = (FloatBuffer) vb.getData();
-        floatBuffer.rewind();
 
         int limit = floatBuffer.limit();
         int steps = vb.getNumComponents() - values.length;
