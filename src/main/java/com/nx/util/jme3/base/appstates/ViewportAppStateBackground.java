@@ -26,8 +26,8 @@ public class ViewportAppStateBackground extends ViewportAppState {
         material.setTexture("ColorMap", app.getAssetManager().loadTexture(texturePath));
         picture.setMaterial(material);
 
-        picture.setWidth(app.getCamera().getWidth());
-        picture.setHeight(app.getCamera().getHeight());
+        picture.setWidth(viewPort.getCamera().getWidth());
+        picture.setHeight(viewPort.getCamera().getHeight());
 
         picture.setQueueBucket(RenderQueue.Bucket.Gui);
 
