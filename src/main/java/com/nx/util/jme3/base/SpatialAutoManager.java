@@ -14,7 +14,10 @@ public abstract class SpatialAutoManager extends AbstractControl {
     public abstract void onAttached();
     public abstract void onDetached();
 
-    private void detach() {
+    public final void detach() {
+        // Get sure that the checker is removed (eg: externally called)
+        removeChecker();
+
         checker = null;
         onDetached();
     }
@@ -46,6 +49,26 @@ public abstract class SpatialAutoManager extends AbstractControl {
             checker = new ScenegraphAutoRemoverChecker();
             rootParent.addControl(checker);
             onAttached();
+        }
+    }
+
+    @Override
+    public void setSpatial(Spatial spatial) {
+        super.setSpatial(spatial);
+
+        // If the control is removed because it is unwanted
+        if(this.spatial == null && checker != null) {
+            removeChecker();
+        }
+    }
+
+    private void removeChecker() {
+        // To avoid the warning
+        checker.flagged = true;
+
+        Spatial checkerSpatial = checker.getSpatial();
+        if(checkerSpatial != null) {
+            checkerSpatial.removeControl(checker);
         }
     }
 
@@ -87,9 +110,11 @@ public abstract class SpatialAutoManager extends AbstractControl {
             }
         }
 
-        public void detach() {
+        public final void detach() {
             SpatialAutoManager.this.detach();
-            spatial.removeControl(this);
+
+            // Actually the SpatialAutoManager.detach() already does this removal
+//            spatial.removeControl(this);
         }
 
         @Override
