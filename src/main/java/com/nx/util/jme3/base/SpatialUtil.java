@@ -1904,4 +1904,15 @@ public final class SpatialUtil {
 
         return store.set(x, y, x + atlasTile.getWidth(), y + atlasTile.getHeight());
     }
+
+    public static Spatial getRootFor(Spatial spatial) {
+        Spatial root = spatial;
+        Node parent = spatial.getParent();
+        while(parent != null) {
+            root = parent;
+            parent = parent.getParent();
+        }
+
+        return root;
+    }
 }
