@@ -9,7 +9,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class SpatialAutoManager extends AbstractControl {
 
-    private ScenegraphAutoRemoverChecker checker;
+    protected ScenegraphAutoRemoverChecker checker;
+    protected Spatial rootParent;
 
     public abstract void onAttached();
     public abstract void onDetached();
@@ -17,9 +18,9 @@ public abstract class SpatialAutoManager extends AbstractControl {
     public final void detach() {
         // Get sure that the checker is removed (eg: externally called)
         removeChecker();
+        onDetached();
 
         checker = null;
-        onDetached();
     }
 
     public boolean isAttached() {
@@ -37,19 +38,19 @@ public abstract class SpatialAutoManager extends AbstractControl {
             return;
         }
 
-        Node rootParent = null;
-        Node parent = spatial.getParent();
-        while (parent != null) {
-            rootParent = parent;
-            parent = parent.getParent();
-        }
+
+        rootParent = SpatialUtil.getRootFor(spatial);
 
         if (rootParent != null) {
 //            ViewportPanel.this.rootNode = rootParent;
-            checker = new ScenegraphAutoRemoverChecker();
+            checker = createChecker();
             rootParent.addControl(checker);
             onAttached();
         }
+    }
+
+    protected ScenegraphAutoRemoverChecker createChecker() {
+        return new ScenegraphAutoRemoverChecker();
     }
 
     @Override

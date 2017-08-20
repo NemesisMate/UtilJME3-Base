@@ -1907,13 +1907,11 @@ public final class SpatialUtil {
     }
 
     public static Spatial getRootFor(Spatial spatial) {
-        Spatial root = spatial;
-        Node parent = spatial.getParent();
-        while(parent != null) {
-            root = parent;
-            parent = parent.getParent();
+        Spatial rootParent = spatial;
+        for(Node parent = spatial.getParent(); parent != null; parent = parent.getParent()) {
+            rootParent = parent;
         }
 
-        return root;
+        return rootParent;
     }
 }
