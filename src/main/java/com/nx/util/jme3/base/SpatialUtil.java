@@ -73,16 +73,16 @@ public final class SpatialUtil {
         return operation;
     }
 
-//    public void generateTangents(Spatial task) {
-//        if(task == null) {
+//    public void generateTangents(Spatial spatial) {
+//        if(spatial == null) {
 //            return;
 //        }
 //
-//        task.depthFirstTraversal(new SceneGraphVisitor() {
+//        spatial.depthFirstTraversal(new SceneGraphVisitor() {
 //            @Override
-//            public void visit(Spatial task) {
-//                if(task instanceof Geometry) {
-//                    Mesh mesh = ((Geometry) task).getMesh();
+//            public void visit(Spatial spatial) {
+//                if(spatial instanceof Geometry) {
+//                    Mesh mesh = ((Geometry) spatial).getMesh();
 //                    if(mesh.getBuffer(VertexBuffer.Type.Normal) != null && mesh.getBuffer(VertexBuffer.Type.Tangent) == null) {
 //                        TangentBinormalGenerator.generate(mesh);
 //                    }
@@ -112,13 +112,13 @@ public final class SpatialUtil {
 
         for(Spatial spat : spatials) {
             int count = 0;
-            //System.out.println(task.getName());
+            //System.out.println(spatial.getName());
             for(Spatial spat2 : spatials)
                 if(spat == spat2) count++;
                 
             if(count > 1){
                 System.out.println(spat.getName() + "(REPEATED - IMPOSSIBLE): " + count);
-                //repeated.put(task, count);
+                //repeated.put(spatial, count);
             }
         }
         System.out.println("Total: " + spatials.size() + "\n\n\n\n");
@@ -325,7 +325,7 @@ public final class SpatialUtil {
 
 
     /**
-     * Finds a task on the given task (usually, a node).
+     * Finds a spatial on the given spatial (usually, a node).
      * 
      * @param spatial
      * @param name
@@ -335,7 +335,7 @@ public final class SpatialUtil {
         if(spatial != null) {
             String spatName = spatial.getName();
             if(spatName != null && spatName.equals(name)) return spatial;
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) return ((Node)spatial).getChild(name);
         }
         
@@ -346,7 +346,7 @@ public final class SpatialUtil {
         if(spatial != null) {
             String spatName = spatial.getName();
 
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) {
                 return findGeometry((Node)spatial, name);
             } else {
@@ -417,7 +417,7 @@ public final class SpatialUtil {
         if(spatial != null) {
             String spatName = spatial.getName();
             if(spatName != null && spatName.startsWith(name)) return spatial;
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) {
                 return findStartsWith((Node)spatial, name);
             }
@@ -446,7 +446,7 @@ public final class SpatialUtil {
         if(spatial != null) {
             String spatName = spatial.getName();
             if(spatName != null && spatName.endsWith(name)) return spatial;
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) {
                 return findEndsWith((Node)spatial, name);
             }
@@ -559,7 +559,7 @@ public final class SpatialUtil {
         if(spatial != null) {
             String spatName = spatial.getName();
 
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) {
                 return findGeometryStartsWith((Node)spatial, name);
             } else {
@@ -609,7 +609,7 @@ public final class SpatialUtil {
             if(spatial.getUserData(key) != null) {
                 return spatial;
             }
-//            if(task instanceof Node) return nodeFind((Node)task, name);
+//            if(spatial instanceof Node) return nodeFind((Node)spatial, name);
             if(spatial instanceof Node) {
                 return findHasUserData((Node)spatial, key);
             }
@@ -642,7 +642,7 @@ public final class SpatialUtil {
     /**
      * Not safe (not enough tested).
      * 
-     * Resizes a task without altering it scale.
+     * Resizes a spatial without altering it scale.
      * TODO: make sure the animations still fine.
      * 
      * @param spatial
@@ -664,21 +664,21 @@ public final class SpatialUtil {
         };
         
         spatial.depthFirstTraversal(visitor);
-//        task.updateGeometricState();
-//        task.updateModelBound();
+//        spatial.updateGeometricState();
+//        spatial.updateModelBound();
         
         SkeletonControl control = spatial.getControl(SkeletonControl.class);
         if(control == null) return;
         
         for(Bone bone : control.getSkeleton().getRoots()) {
-            // If don't want to change the whole model (only the instance on the task) uncomment
+            // If don't want to change the whole model (only the instance on the spatial) uncomment
             // the following two lines (bone.setUser..., and comment bone.setBindTransforms(...)
             bone.setUserControl(true);
             bone.setUserTransforms(new Vector3f(Vector3f.ZERO), Quaternion.IDENTITY, new Vector3f(scale, scale, scale));
             //bone.setBindTransforms(Vector3f.ZERO, Quaternion.IDENTITY, new Vector3f(scale, scale, scale));
         }
         
-//        AnimControl animControl = task.getControl(AnimControl.class);
+//        AnimControl animControl = spatial.getControl(AnimControl.class);
 //        if(animControl == null) return;
 //        
 //        
@@ -686,7 +686,7 @@ public final class SpatialUtil {
     }
     
     /**
-     * Translates the internal geometries of this task without altering the task local translation.
+     * Translates the internal geometries of this spatial without altering the spatial local translation.
      * @param spatial
      * @param translation 
      */
@@ -699,9 +699,9 @@ public final class SpatialUtil {
 //                    FloatBuffer positions = (FloatBuffer) pb.getData();
 //
 //                    for(int i = 0; i < positions.capacity(); i++)
-//                        positions.put(i, positions.get(i) + (1f/task.getLocalScale().y));
+//                        positions.put(i, positions.get(i) + (1f/spatial.getLocalScale().y));
                     
-                    //spat.setLocalTranslation(new Vector3f(0f, 1f, 0f).multLocal(Vector3f.UNIT_XYZ.divide(task.getLocalScale())));
+                    //spat.setLocalTranslation(new Vector3f(0f, 1f, 0f).multLocal(Vector3f.UNIT_XYZ.divide(spatial.getLocalScale())));
                     spat.setLocalTranslation(translation.divide(spatial.getLocalScale()));
                 }
             }
@@ -711,7 +711,7 @@ public final class SpatialUtil {
     }
     
     /**
-     * Rotates the internal geometries of this task without altering the task local Rotates.
+     * Rotates the internal geometries of this spatial without altering the spatial local Rotates.
      * 
      * @param spatial
      * @param angle
@@ -731,7 +731,7 @@ public final class SpatialUtil {
     }
     
     /**
-     * Optimizes Geometries and Nodes for the given task.
+     * Optimizes Geometries and Nodes for the given spatial.
      * Basically, performs a {@link #optimizeGeoms(Spatial)} followed by a {@link #optimizeNodes(Spatial)}
      * 
      * @param spatial to optimize.
@@ -742,7 +742,7 @@ public final class SpatialUtil {
     }
     
     /**
-     * Optimizes Geometries for the given task.
+     * Optimizes Geometries for the given spatial.
      * 
      * @param spatial to optimize.
      */
@@ -754,7 +754,7 @@ public final class SpatialUtil {
     }
     
     /**
-     * Optimizes Nodes for the given task.
+     * Optimizes Nodes for the given spatial.
      * 
      * @param spatial to optimize.
      */
@@ -874,47 +874,72 @@ public final class SpatialUtil {
 
 
     public static <T extends Control> T getFirstControlFor(Spatial spat, final Class<T> controlClass) {
-        return visitNodeWith(spat, new Operation() {
-
-            T firstControl;
-
-            @Override
-            public boolean operate(Spatial spatial) {
-                if(firstControl != null) {
-                    return true;
-                }
-
-                T control = spatial.getControl(controlClass);
+        T control = spat.getControl(controlClass);
+        if(control == null && (spat instanceof Node)) {
+            for(Spatial child : ((SafeArrayList<Spatial>)((Node) spat).getChildren()).getArray()) {
+                control = getFirstControlFor(child, controlClass);
                 if(control != null) {
-                    this.firstControl = control;
-                    return true;
+                    return control;
                 }
-
-                return false;
             }
-        }).firstControl;
+        }
+
+        return control;
+
+//        return visitNodeWith(spat, new Operation() {
+//
+//            T firstControl;
+//
+//            @Override
+//            public boolean operate(Spatial spatial) {
+//                if(firstControl != null) {
+//                    return true;
+//                }
+//
+//                T control = spatial.getControl(controlClass);
+//                if(control != null) {
+//                    this.firstControl = control;
+//                    return true;
+//                }
+//
+//                return false;
+//            }
+//        }).firstControl;
     }
 
     public static <T extends AbstractControl> T getFirstEnabledControlFor(Spatial spat, final Class<T> controlClass) {
-        return visitNodeWith(spat, new Operation() {
-
-            T firstControl;
-
-            @Override
-            public boolean operate(Spatial spatial) {
-                if(firstControl != null) {
-                    return true;
-                }
-
-                T control = spatial.getControl(controlClass);
+        T control = spat.getControl(controlClass);
+        if(control == null && (spat instanceof Node)) {
+            for(Spatial child : ((SafeArrayList<Spatial>)((Node) spat).getChildren()).getArray()) {
+                control = getFirstControlFor(child, controlClass);
                 if(control != null && control.isEnabled()) {
-                    this.firstControl = control;
-                    return true;
+                    return control;
                 }
-
-                return false;
             }
-        }).firstControl;
+        }
+
+        return control;
+
+//        //TODO: Change to a non-new-instantiation way
+//        return visitNodeWith(spat, new Operation() {
+//
+//            T firstControl;
+//
+//            @Override
+//            public boolean operate(Spatial spatial) {
+//                if(firstControl != null) {
+//                    return true;
+//                }
+//
+//                T control = spatial.getControl(controlClass);
+//                if(control != null && control.isEnabled()) {
+//                    this.firstControl = control;
+//                    return true;
+//                }
+//
+//                return false;
+//            }
+//        }).firstControl;
     }
 
     public static Geometry createArrow(Vector3f direction) {
@@ -1708,7 +1733,11 @@ public final class SpatialUtil {
         Skeleton skeleton = skeletonControl.getSkeleton();
         Bone bone = skeleton.getBone(boneName);
 
-        bone.getLocalPosition().add(skeletonControl.getSpatial().getWorldTranslation(), store);
+        Spatial spatial = skeletonControl.getSpatial();
+
+        store.set(bone.getModelSpacePosition()).multLocal(spatial.getWorldScale());
+        spatial.getWorldRotation().multLocal(store);
+        store.addLocal(spatial.getWorldTranslation());
 
         return store;
     }
@@ -1913,5 +1942,16 @@ public final class SpatialUtil {
         }
 
         return rootParent;
+    }
+
+
+    public static <T extends Control> boolean moveFirstControl(Spatial from, Spatial to, Class<T> clazz) {
+        Control control = getFirstControlFor(from, clazz);
+        if(control == null) {
+            return false;
+        }
+
+        throw new UnsupportedOperationException();
+        //TODO
     }
 }
