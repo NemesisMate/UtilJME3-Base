@@ -2,6 +2,7 @@ package com.nx.util.jme3.base.appstates;
 
 import com.jme3.app.Application;
 import com.jme3.material.Material;
+import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.ui.Picture;
@@ -13,7 +14,12 @@ public class ViewportAppStateBackground extends ViewportAppState {
 
 
     public ViewportAppStateBackground(String texturePath) {
-        super(Mode.BACKGROUND, null);
+        this(texturePath, null);
+    }
+
+    public ViewportAppStateBackground(String texturePath, Camera camera) {
+        super(Mode.BACKGROUND, null, camera);
+
         this.texturePath = texturePath;
     }
 

@@ -17,36 +17,45 @@ public class ViewportAppState extends BaseAppState {
     protected Mode mode;
     protected Node rootNode;
     protected ViewPort viewPort;
+    protected Camera camera;
 
     public ViewportAppState() {
-        this(Mode.MAIN, null);
+        this(Mode.MAIN, null, null);
     }
 
     public ViewportAppState(Mode mode, String name) {
+        this(mode, name, null);
+    }
+
+    public ViewportAppState(Mode mode, String name, Camera camera) {
         this.mode = mode;
         this.rootNode = new Node(name != null ? name : "Viewport-" + mode + "-Root");
+        this.camera = camera;
     }
 
     @Override
     protected void initialize(Application app) {
-        Camera cam = app.getCamera().clone();
+        if(camera == null) {
+            camera = app.getCamera().clone();
+        }
 
         switch (mode) {
             case BACKGROUND:
-                viewPort = app.getRenderManager().createPreView(rootNode.getName(), cam);
+                viewPort = app.getRenderManager().createPreView(rootNode.getName(), camera);
                 viewPort.setClearFlags(true, true, true);
-                app.getViewPort().setClearFlags(false, true, true);
+                app.getViewPort().setClearColor(false);
                 viewPort.setBackgroundColor(new ColorRGBA(.13f, .19f, .21f, 1f));
                 break;
             case FOREGROUND:
-                viewPort = app.getRenderManager().createPostView(rootNode.getName(), cam);
+                viewPort = app.getRenderManager().createPostView(rootNode.getName(), camera);
+                viewPort.setClearFlags(false, false, false);
                 break;
             default:
-                viewPort = app.getRenderManager().createMainView(rootNode.getName(), cam);
+                viewPort = app.getRenderManager().createMainView(rootNode.getName(), camera);
+                viewPort.setClearFlags(false, false, false);
                 break;
         }
 
-        viewPort.setClearFlags(false, false, false);
         viewPort.attachScene(rootNode);
     }
 
