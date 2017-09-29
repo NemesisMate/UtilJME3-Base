@@ -194,7 +194,10 @@ public final class SpatialUtil {
 
         if (spatial instanceof Node) {
             for (Spatial child : ((SafeArrayList<Spatial>)((Node)spatial).getChildren()).getArray()) {
-                return gatherFirstSpatial(child, type);
+                T s = gatherFirstSpatial(child, type);
+                if(s != null) {
+                    return s;
+                }
             }
         }
 
