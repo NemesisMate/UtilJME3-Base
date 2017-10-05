@@ -1731,6 +1731,8 @@ public final class SpatialUtil {
     public static Vector3f getBoneWorldTranslation(SkeletonControl skeletonControl, String boneName, Vector3f store) {
         if(store == null) {
             store = new Vector3f();
+        } else {
+            store.set(Vector3f.ZERO);
         }
 
         Skeleton skeleton = skeletonControl.getSkeleton();
@@ -1738,8 +1740,11 @@ public final class SpatialUtil {
 
         Spatial spatial = skeletonControl.getSpatial();
 
-        store.set(bone.getModelSpacePosition()).multLocal(spatial.getWorldScale());
-        spatial.getWorldRotation().multLocal(store);
+        if(bone != null) {
+            store.set(bone.getModelSpacePosition()).multLocal(spatial.getWorldScale());
+            spatial.getWorldRotation().multLocal(store);
+        }
+
         store.addLocal(spatial.getWorldTranslation());
 
         return store;
