@@ -22,4 +22,7 @@ public class PlatformsUtil {
         return context.getRenderer().getCaps().contains(cap);
     }
 
+    public static boolean isAndroid() {
+        return System.getProperty("java.vendor.url").contains("android");
+    }
 }

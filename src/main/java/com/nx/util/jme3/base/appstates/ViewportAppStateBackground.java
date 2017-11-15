@@ -27,6 +27,8 @@ public class ViewportAppStateBackground extends ViewportAppState {
     protected void initialize(Application app) {
         super.initialize(app);
 
+        camera.setParallelProjection(true);
+
         picture = new Picture("background");
         Material material = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
         material.setTexture("ColorMap", app.getAssetManager().loadTexture(texturePath));

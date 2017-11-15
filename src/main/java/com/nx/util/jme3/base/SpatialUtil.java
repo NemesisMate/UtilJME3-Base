@@ -815,10 +815,18 @@ public final class SpatialUtil {
         return false;
     }
 
+    /**
+     * @deprecated use {@link #getControlsFor(Spatial, Class)} instead
+     */
+    @Deprecated
     public static Collection<AnimControl> getAnimControlsFor(Spatial spat) {
         return getControlsFor(spat, AnimControl.class);
     }
 
+    /**
+     * @deprecated use {@link #getFirstControlFor(Spatial, Class)} instead
+     */
+    @Deprecated
     public static AnimControl getFirstAnimControlFor(Spatial spat) {
         return getFirstControlFor(spat, AnimControl.class);
     }
