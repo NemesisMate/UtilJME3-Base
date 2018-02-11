@@ -1,6 +1,7 @@
 package com.nx.util.jme3.base.appstates;
 
 import com.jme3.app.Application;
+import com.jme3.asset.AssetManager;
 import com.jme3.material.Material;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.RenderManager;
@@ -9,8 +10,8 @@ import com.jme3.ui.Picture;
 
 public class ViewportAppStateBackground extends ViewportAppState {
 
-    Picture picture;
-    String texturePath;
+    private Picture picture;
+    protected String texturePath;
 
 
     public ViewportAppStateBackground(String texturePath) {
@@ -30,9 +31,8 @@ public class ViewportAppStateBackground extends ViewportAppState {
         camera.setParallelProjection(true);
 
         picture = new Picture("background");
-        Material material = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        material.setTexture("ColorMap", app.getAssetManager().loadTexture(texturePath));
-        picture.setMaterial(material);
+
+        picture.setMaterial(createMaterial(app.getAssetManager()));
 
         picture.setWidth(viewPort.getCamera().getWidth());
         picture.setHeight(viewPort.getCamera().getHeight());
@@ -42,6 +42,13 @@ public class ViewportAppStateBackground extends ViewportAppState {
         rootNode.attachChild(picture);
 
         rootNode.updateGeometricState();
+    }
+
+    protected Material createMaterial(AssetManager assetManager) {
+        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        material.setTexture("ColorMap", assetManager.loadTexture(texturePath));
+
+        return material;
     }
 
     public Picture getPicture() {

@@ -1713,23 +1713,37 @@ public final class SpatialUtil {
     // --- END TEXCOORDS AREA ---- //
 
 
+//    /**
+//     * TODO: Is this even right?, Why not use just the Spatial.worldToLocal?. Where is this being used?
+//     *
+//     * @deprecated Use Spatial.worldToLocal instead
+//     */
+//    @Deprecated
+//    public static void setWorldTranslation(Spatial spatial, Vector3f translation) {
+//        Vector3f worldTranslation = Vector3f.ZERO;
+//        Vector3f worldScale = Vector3f.UNIT_XYZ;
+//
+//        Spatial parent = spatial.getParent();
+//        if(parent != null) {
+//            worldTranslation = parent.getWorldTranslation();
+//            worldScale = parent.getWorldScale();
+//        }
+//
+//        spatial.setLocalTranslation(
+//                spatial.getLocalTranslation().set(
+//                        // spatial.getWorldTranslation is being used as an aux.
+//                        spatial.getWorldTranslation().set(Vector3f.UNIT_XYZ).divideLocal(worldScale).multLocal(translation).subtractLocal(worldTranslation)
+//                )
+//        );
+//    }
 
     public static void setWorldTranslation(Spatial spatial, Vector3f translation) {
-        Vector3f worldTranslation = Vector3f.ZERO;
-        Vector3f worldScale = Vector3f.UNIT_XYZ;
-
-        Spatial parent = spatial.getParent();
-        if(parent != null) {
-            worldTranslation = parent.getWorldTranslation();
-            worldScale = parent.getWorldScale();
+        Node parent = spatial.getParent();
+        if(parent == null) {
+            spatial.setLocalTranslation(translation);
+        } else {
+            spatial.setLocalTranslation(parent.worldToLocal(translation, spatial.getLocalTranslation()));
         }
-
-        spatial.setLocalTranslation(
-                spatial.getLocalTranslation().set(
-                        // spatial.getWorldTranslation is being used as an aux.
-                        spatial.getWorldTranslation().set(Vector3f.UNIT_XYZ).divideLocal(worldScale).multLocal(translation).subtractLocal(worldTranslation)
-                )
-        );
     }
 
     public static Vector3f getBoneWorldTranslation(Spatial spatial, String boneName, Vector3f store) {
@@ -1969,5 +1983,21 @@ public final class SpatialUtil {
 
         throw new UnsupportedOperationException();
         //TODO
+    }
+
+    public static Vector3f getCenter(Spatial spatial, Vector3f store) {
+        if(store == null) {
+            store = new Vector3f();
+        }
+
+        BoundingBox bb = (BoundingBox) spatial.getWorldBound();
+
+        if(bb == null) {
+            throw new IllegalStateException();
+        }
+
+        bb.getCenter(store);
+
+        return store;
     }
 }
