@@ -13,7 +13,7 @@ public final class VectorUtil {
      * @param store
      * @return
      */
-    public static Vector3f randomUniformVector(Vector3f store) {
+    public static Vector3f randomVectorUniform(Vector3f store) {
         if(store == null) {
             store = new Vector3f();
         }
@@ -26,9 +26,15 @@ public final class VectorUtil {
         float x = rxy * FastMath.cos(phi);
         float y = rxy * FastMath.sin(phi);
 
-        store.set(x, y, z);
+        return store.set(x, y, z);
+    }
 
-        return store;
+    public static Vector3f randomVector(Vector3f store) {
+        if(store == null) {
+            store = new Vector3f();
+        }
+
+        return store.set(FastMath.nextRandomFloat() * 2 - 1, FastMath.nextRandomFloat() * 2 - 1, FastMath.nextRandomFloat() * 2 - 1);
     }
 
     public static Vector3f get90DegreeVector(Vector3f vector, Vector3f store) {
