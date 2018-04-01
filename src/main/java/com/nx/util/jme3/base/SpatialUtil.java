@@ -1779,13 +1779,20 @@ public final class SpatialUtil {
     }
 
 
-
-    public static Control createControlFollow(Vector3f toFollow) {
-        return new FollowControl(toFollow);
+    public static Control createControlFollow(Quaternion followRotation) {
+        return new FollowRotationControl(followRotation);
     }
 
-    public static Control createControlFollowOffset(Vector3f toFollow, Vector3f offset) {
-        return new FollowOffsetControl(toFollow, offset);
+    public static Control createControlFollow(Vector3f followPosition, Quaternion followRotation) {
+        return new FollowFullControl(followPosition, followRotation);
+    }
+
+    public static Control createControlFollow(Vector3f followPosition) {
+        return new FollowControl(followPosition);
+    }
+
+    public static Control createControlFollowOffset(Vector3f followPosition, Vector3f offset) {
+        return new FollowOffsetControl(followPosition, offset);
     }
 
     public static Control createControlTimer(float time) {
@@ -1796,23 +1803,58 @@ public final class SpatialUtil {
         return new TimerLeaveControl(time);
     }
 
-    public static class FollowControl extends AbstractControl {
+    public static class FollowRotationControl extends AbstractControl {
 
-        protected Vector3f toFollow;
+        protected Quaternion followRotation;
 
-        public FollowControl(Vector3f toFollow) {
-            this.toFollow = toFollow;
+        public FollowRotationControl(Quaternion followRotation) {
+            this.followRotation = followRotation;
         }
 
         @Override
         protected void controlUpdate(float tpf) {
-            spatial.setLocalTranslation(toFollow);
+            spatial.setLocalRotation(followRotation);
         }
 
         @Override
-        protected void controlRender(RenderManager rm, ViewPort vp) {
+        protected void controlRender(RenderManager rm, ViewPort vp) { }
+    }
 
+    public static class FollowFullControl extends AbstractControl {
+
+        protected Vector3f followPosition;
+        protected Quaternion followRotation;
+
+        public FollowFullControl(Vector3f followPosition, Quaternion followRotation) {
+            this.followPosition = followPosition;
+            this.followRotation = followRotation;
         }
+
+        @Override
+        protected void controlUpdate(float tpf) {
+            spatial.setLocalTranslation(followPosition);
+            spatial.setLocalRotation(followRotation);
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) { }
+    }
+
+    public static class FollowControl extends AbstractControl {
+
+        protected Vector3f followPosition;
+
+        public FollowControl(Vector3f followPosition) {
+            this.followPosition = followPosition;
+        }
+
+        @Override
+        protected void controlUpdate(float tpf) {
+            spatial.setLocalTranslation(followPosition);
+        }
+
+        @Override
+        protected void controlRender(RenderManager rm, ViewPort vp) { }
     }
 
     //TODO: Move to SpatialUtil
@@ -1820,15 +1862,15 @@ public final class SpatialUtil {
 
         protected Vector3f offset;
 
-        public FollowOffsetControl(Vector3f toFollow, Vector3f offset) {
-            super(toFollow);
+        public FollowOffsetControl(Vector3f followPosition, Vector3f offset) {
+            super(followPosition);
 
             this.offset = offset;
         }
 
         @Override
         protected void controlUpdate(float tpf) {
-            spatial.setLocalTranslation(toFollow.add(offset, spatial.getLocalTranslation()));
+            spatial.setLocalTranslation(followPosition.add(offset, spatial.getLocalTranslation()));
         }
     }
 
