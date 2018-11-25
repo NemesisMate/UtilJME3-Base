@@ -1,6 +1,7 @@
 package com.nx.util.jme3.base;
 
 import com.jme3.animation.AnimControl;
+import com.jme3.animation.Animation;
 import com.jme3.animation.Bone;
 import com.jme3.animation.Skeleton;
 import com.jme3.animation.SkeletonControl;
@@ -11,6 +12,7 @@ import com.jme3.collision.Collidable;
 import com.jme3.collision.CollisionResult;
 import com.jme3.collision.CollisionResults;
 import com.jme3.font.BitmapFont;
+import com.jme3.light.Light;
 import com.jme3.material.MatParam;
 import com.jme3.material.Material;
 import com.jme3.material.MaterialDef;
@@ -20,7 +22,13 @@ import com.jme3.math.Vector3f;
 import com.jme3.math.Vector4f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
-import com.jme3.scene.*;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.GeometryGroupNode;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
+import com.jme3.scene.SceneGraphVisitor;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.control.AbstractControl;
 import com.jme3.scene.control.Control;
 import com.jme3.scene.debug.Arrow;
@@ -34,8 +42,20 @@ import jme3tools.optimize.GeometryBatchFactory;
 import jme3tools.optimize.TextureAtlas;
 import org.slf4j.LoggerFactory;
 
-import java.nio.*;
-import java.util.*;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.nx.util.jme3.base.DebugUtil.assetManager;
 
@@ -52,13 +72,30 @@ public final class SpatialUtil {
     public interface Operation {
         
         /**
-         * Must stop that rama
+         * Must stop that branch
          * @return 
          */
-        public boolean operate(Spatial spatial);
+        boolean operate(Spatial spatial);
     }
 
-    public interface ReturnOperation<T extends Object> extends Operation { public T getReturnObject(); }
+    public interface GeometryPredicate extends Predicate<Spatial> {
+        @Override
+        default boolean test(Spatial spatial) {
+            return spatial instanceof Geometry && testGeometry((Geometry) spatial);
+        }
+
+        boolean testGeometry(Geometry geometry);
+    }
+
+    public interface NodePredicate extends Predicate<Spatial> {
+        @Override
+        default boolean test(Spatial spatial) {
+            return spatial instanceof Node && testNode((Node) spatial);
+        }
+
+        boolean testNode(Node node);
+    }
+
 
     // TODO improve visit first to cut on the for if returnedObject on returnoperation == null.
     public static <T extends Operation> T visitNodeWith(Spatial spatial, T operation) {
@@ -125,6 +162,29 @@ public final class SpatialUtil {
         
     }
 
+    public static String getParentHierarchyString(Spatial spatial) {
+        StringBuilder hierarchyString = new StringBuilder(spatial.getName());
+
+        for(Spatial related : SpatialUtil.getParentHierarchy(spatial)) {
+            hierarchyString.append(" <- ").append(related.getName());
+        }
+
+        return hierarchyString.toString();
+    }
+
+    public static List<Node> getParentHierarchy(Spatial spatial) {
+        List<Node> hierarchy = new ArrayList<>();
+
+        Node parent = spatial.getParent();
+        while(parent != null) {
+            hierarchy.add(parent);
+
+            parent = parent.getParent();
+        }
+
+        return hierarchy;
+    }
+
     //TODO
     public static List<String> getDrawGraph(final Spatial spatial) {
         return sceneGraphLoop(new ArrayList<Spatial>(1) {{ add(spatial); }}, new ArrayList<Spatial>(), "", new ArrayList<String>());
@@ -135,35 +195,54 @@ public final class SpatialUtil {
         for(Spatial spatial : spatials) {
             all.add(spatial);
             
-            String data = dashes + spatial;
+            StringBuilder data = new StringBuilder(dashes + spatial);
             if(spatial instanceof Geometry) {
                 Material material = ((Geometry)spatial).getMaterial();
 
-                data += "(" + (material == null ? "<N/M>" : ((Geometry)spatial).getMaterial().getName() + " <>" + ((Geometry) spatial).getMaterial().getKey() + ")");
+                data.append("(")
+                        .append(material == null ?
+                                "<N/M>" : ((Geometry) spatial).getMaterial().getName() + " <>" + ((Geometry) spatial).getMaterial().getKey())
+                        .append(")");
             }
 
             int numControls = spatial.getNumControls();
 
-            data += " - (" + spatial.getTriangleCount() + "t, " + spatial.getVertexCount() +
-                    "v) LOC[L:" + spatial.getLocalTranslation() + ", W:" + spatial.getWorldTranslation() +
-                    "] SCALE[L:" + spatial.getLocalScale() + ", W:" + spatial.getWorldScale() +
-                    "] ROT[L:" + spatial.getLocalRotation() + ", W:" + spatial.getWorldRotation() +  "]" +
-                    " - Controls: " + numControls;
+            data.append(" - (")
+                    .append(spatial.getTriangleCount()).append("t, ")
+                    .append(spatial.getVertexCount()).append("v) ")
+                    .append("LOC[L:").append(spatial.getLocalTranslation()).append(", W:").append(spatial.getWorldTranslation()).append("] ")
+                    .append("SCALE[L:").append(spatial.getLocalScale()).append(", W:").append(spatial.getWorldScale()).append("] ")
+                    .append("ROT[L:").append(spatial.getLocalRotation()).append(", W:").append(spatial.getWorldRotation()).append("]")
+                    .append(" - Controls: ").append(numControls);
 
             if(numControls > 0) {
-                data += " (";
+                data.append(" (");
+
                 for(int i = 0; i < numControls; i++) {
                     Control control = spatial.getControl(i);
-                    data += control.getClass().getSimpleName() + ", ";
+                    data.append(control.getClass().getSimpleName()).append(", ");
                 }
 
-                data = data.substring(0, data.length() - 2);
-                data += ")";
+                data = new StringBuilder(data.substring(0, data.length() - 2));
+                data.append(")");
+            }
+
+            int numLights = spatial.getLocalLightList().size();
+            data.append(", Lights: ").append(numLights);
+            if(numLights > 0) {
+                data.append(" (");
+
+                for(Light light : spatial.getLocalLightList()) {
+                    data.append(light.getClass().getSimpleName()).append(", ");
+                }
+
+                data = new StringBuilder(data.substring(0, data.length() - 2));
+                data.append(")");
             }
             
 //            System.out.println(data);
 //            stringBuilder.append('\n' + data);
-            lines.add(data);
+            lines.add(data.toString());
             
             if(spatial instanceof Node) {
                 sceneGraphLoop(((Node)spatial).getChildren(), all, dashes, lines);
@@ -344,6 +423,36 @@ public final class SpatialUtil {
         
         return null;
     }
+
+    public static Spatial find(Spatial spatial, Predicate<Spatial> predicate) {
+        if(predicate.test(spatial)) {
+            return spatial;
+        }
+
+        if(spatial instanceof Node) {
+            for(Spatial child : ((SafeArrayList<Spatial>)((Node) spatial).getChildren()).getArray()) {
+                Spatial found = find(child, predicate);
+                if(found != null) {
+                    return found;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static Geometry findGeometry(Spatial spatial, GeometryPredicate predicate) {
+        return (Geometry) find(spatial, predicate);
+    }
+
+    public static Geometry findGeometryWithMatParam(Spatial spatial, String matParam) {
+        return findGeometry(spatial, geometry -> hasMatParam(matParam, geometry));
+    }
+
+    public static Geometry findGeometryWithMatParamSet(Spatial spatial, String matParam) {
+        return findGeometry(spatial, geometry -> hasMatParamSet(matParam, geometry));
+    }
+
 
     public static Geometry findGeometry(Spatial spatial, final String name) {
         if(spatial != null) {
@@ -803,6 +912,10 @@ public final class SpatialUtil {
 //        System.gc();
     }
 
+    public static boolean hasControl(Spatial spat, Class<? extends Control> controlType) {
+        return getFirstControlFor(spat, controlType) != null;
+    }
+
     public static boolean hasControl(Spatial spat, Control control) {
         int numControl = spat.getNumControls();
 
@@ -920,10 +1033,10 @@ public final class SpatialUtil {
 
     public static <T extends AbstractControl> T getFirstEnabledControlFor(Spatial spat, final Class<T> controlClass) {
         T control = spat.getControl(controlClass);
-        if(control == null && (spat instanceof Node)) {
+        if((control == null || !control.isEnabled()) && (spat instanceof Node)) {
             for(Spatial child : ((SafeArrayList<Spatial>)((Node) spat).getChildren()).getArray()) {
-                control = getFirstControlFor(child, controlClass);
-                if(control != null && control.isEnabled()) {
+                control = getFirstEnabledControlFor(child, controlClass);
+                if(control != null) {
                     return control;
                 }
             }
@@ -2041,5 +2154,33 @@ public final class SpatialUtil {
         bb.getCenter(store);
 
         return store;
+    }
+
+    public static boolean hasMatParamSet(String param, Geometry geometry) {
+        return hasMatParamSet(param, geometry.getMaterial());
+    }
+
+    public static boolean hasMatParam(String param, Geometry geometry) {
+        return hasMatParam(param, geometry.getMaterial());
+    }
+
+    public static boolean hasMatParam(String param, Material material) {
+        return material.getMaterialDef().getMaterialParam(param) != null;
+    }
+
+    public static boolean hasMatParamSet(String param, Material material) {
+        return hasMatParam(param, material) && material.getParam(param) != null;
+    }
+
+    public static List<Animation> getAnimationsFrom(AnimControl animControl) {
+        return animControl.getAnimationNames().stream().map(animControl::getAnim).collect(Collectors.toList());
+    }
+
+    public static AnimControl createAnimControlFrom(Skeleton skeleton, Collection<Animation> animations) {
+
+        AnimControl animControl = new AnimControl(skeleton);
+        animations.forEach(animControl::addAnim);
+
+        return animControl;
     }
 }

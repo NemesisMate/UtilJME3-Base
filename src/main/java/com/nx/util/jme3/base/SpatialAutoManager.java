@@ -54,7 +54,7 @@ public abstract class SpatialAutoManager extends AbstractControl {
     }
 
     @Override
-    public void setSpatial(Spatial spatial) {
+    public final void setSpatial(Spatial spatial) {
         super.setSpatial(spatial);
 
         // If the control is removed because it is unwanted

@@ -1,5 +1,6 @@
 package com.nx.util.jme3.base;
 
+import com.jme3.animation.SkeletonControl;
 import com.jme3.app.Application;
 import com.jme3.app.LegacyApplication;
 import com.jme3.app.SimpleApplication;
@@ -16,11 +17,16 @@ import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.Camera;
 import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.*;
+import com.jme3.scene.BatchNode;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.util.BufferUtils;
 import jme3tools.optimize.GeometryBatchFactory;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.FloatBuffer;
 import java.util.Arrays;
@@ -32,6 +38,7 @@ import java.util.concurrent.Callable;
  *
  * @author NemesisMate
  */
+@Slf4j
 public class DebugUtil extends AbstractAppState {
     //TODO: make completely non-static and fetch it with stateManager.getState();
 
@@ -55,7 +62,7 @@ public class DebugUtil extends AbstractAppState {
     }
 
     public static void initDebugs(LegacyApplication app, Node rootNode, AssetManager assetManager) {
-        LoggerFactory.getLogger(DebugUtil.class).info("Initting debugs for app: {}, with rootNode: {}.", app, rootNode);
+        log.info("Initting debugs for app: {}, with rootNode: {}.", app, rootNode);
 
         if(app != null) {
             DebugUtil.app = app;
@@ -79,9 +86,9 @@ public class DebugUtil extends AbstractAppState {
 //            rootNode.attachChild(debugInstance.debugsNode);
 //            batchNode.attachChild(debugInstance.debugsNode);
 
-            LoggerFactory.getLogger(DebugUtil.class).info("Debugs initted for app: {}, with rootNode: {}.", app, rootNode);
+            log.info("Debugs initted for app: {}, with rootNode: {}.", app, rootNode);
         } else {
-            LoggerFactory.getLogger(DebugUtil.class).info("Debugs already initted for app: {}, with rootNode: {}.", app, rootNode);
+            log.info("Debugs already initted for app: {}, with rootNode: {}.", app, rootNode);
         }
 
 
@@ -502,7 +509,7 @@ public class DebugUtil extends AbstractAppState {
         if(rootNode == null) {
             rootNode = DebugUtil.rootNode;
             if(rootNode == null) {
-                LoggerFactory.getLogger(DebugUtil.class).warn("RootNode is null, not debugging.");
+                log.warn("RootNode is null, not debugging.");
                 return;
             }
         }
@@ -510,7 +517,7 @@ public class DebugUtil extends AbstractAppState {
         if(assetManager == null) {
             assetManager = DebugUtil.assetManager;
             if(assetManager == null) {
-                LoggerFactory.getLogger(DebugUtil.class).warn("AssetManager is null, not debugging.");
+                log.warn("AssetManager is null, not debugging.");
                 return;
             }
         }
@@ -525,12 +532,12 @@ public class DebugUtil extends AbstractAppState {
     public static void setRootNode(Node rootNode) {
 //        DebugUtil.rootNode = rootNode;
         if(rootNode != null) {
-            LoggerFactory.getLogger(DebugUtil.class).info("Debug nodes attached to root: {}.", rootNode);
+            log.info("Debug nodes attached to root: {}.", rootNode);
             batchNode = new BatchNode("DebugBatchNode");
             rootNode.attachChild(batchNode);
         } else {
             if(batchNode != null) {
-                LoggerFactory.getLogger(DebugUtil.class).info("Debug nodes detached from root: {}.", batchNode.getParent());
+                log.info("Debug nodes detached from root: {}.", batchNode.getParent());
                 batchNode.removeFromParent();
             }
 
@@ -544,7 +551,7 @@ public class DebugUtil extends AbstractAppState {
         int size = drawPoints.length;
 
         if(size < 2) {
-            LoggerFactory.getLogger(DebugUtil.class).warn("Shouldn't be trying to debug a line with: {} points.", size);
+            log.warn("Shouldn't be trying to debug a line with: {} points.", size);
             return null;
         }
 
@@ -597,10 +604,11 @@ public class DebugUtil extends AbstractAppState {
         }
         
         if(drawColor != null) {
-            Material color = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-            color.setColor("Color", drawColor);
-            color.getAdditionalRenderState().setWireframe(true);
-            store.setMaterial(color);
+            Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            material.setName("Line-Debug_material");
+            material.setColor("Color", drawColor);
+            material.getAdditionalRenderState().setWireframe(true);
+            store.setMaterial(material);
         }
 
         m.setMode(Mesh.Mode.Lines);
@@ -622,6 +630,7 @@ public class DebugUtil extends AbstractAppState {
     public static void debugLocation(Node rootNode, AssetManager assetManager, ColorRGBA color, Vector3f location) {
         Geometry geom = new Geometry("Sphere", new Sphere(10,10,1));
         Material mat = new Material(assetManager,  "Common/MatDefs/Misc/Unshaded.j3md");
+        mat.setName("Location-Debug_material");
         mat.setColor("Color", color);
         geom.setMaterial(mat);
         
@@ -648,10 +657,11 @@ public class DebugUtil extends AbstractAppState {
             color = ColorRGBA.randomColor();
         }
 
-        Material matColor = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        matColor.setColor("Color", color);
-        matColor.getAdditionalRenderState().setWireframe(true);
-        spatial.setMaterial(matColor);
+        Material material = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        material.setName("Spatial-Debug_material");
+        material.setColor("Color", color);
+        material.getAdditionalRenderState().setWireframe(true);
+        spatial.setMaterial(material);
 
         add(spatial);
     }
@@ -698,6 +708,7 @@ public class DebugUtil extends AbstractAppState {
 
     public static Material createNormalMaterial(Geometry geom) {
         Material material = new Material(assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        material.setName("Normal-Debug_material");
 
         return material;
     }
@@ -707,6 +718,7 @@ public class DebugUtil extends AbstractAppState {
 
         if(geom instanceof ParticleEmitter && ((ParticleEmitter) geom).getMeshType() == ParticleMesh.Type.Point) {
             mat = new Material(assetManager, "Common/MatDefs/Misc/Particle.j3md");
+            mat.setName("PointParticle-Debug_material");
 //            if(colors) {
                 mat.setColor("GlowColor", ColorRGBA.randomColor());
 //            }
@@ -715,6 +727,7 @@ public class DebugUtil extends AbstractAppState {
 
         if(colors) {
             mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setName("Color-Debug_material");
             ColorRGBA color = ColorRGBA.randomColor();
             if (geom.getQueueBucket() == RenderQueue.Bucket.Sky) {
                 color.set(color.r, color.g, color.b, 0.1f);
@@ -724,6 +737,7 @@ public class DebugUtil extends AbstractAppState {
             mat.setColor("Color", color);
         } else {
             mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.setName("VertexColor-Debug_material");
             mat.setBoolean("VertexColor", true);
         }
 
@@ -742,6 +756,7 @@ public class DebugUtil extends AbstractAppState {
         
         navGeom.setMesh(mesh);
         Material green = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        green.setName("Mesh-Debug_material");
         green.setColor("Color", color);
         green.getAdditionalRenderState().setWireframe(true);
         navGeom.setMaterial(green);
@@ -832,7 +847,7 @@ public class DebugUtil extends AbstractAppState {
 //                batchNode.batch();
             }
         } else {
-            LoggerFactory.getLogger(DebugUtil.class).error("No debug rootNode set");
+            log.error("No debug rootNode set");
         }
     }
 
@@ -842,7 +857,7 @@ public class DebugUtil extends AbstractAppState {
 
             batchNode.batch();
         } else {
-            LoggerFactory.getLogger(DebugUtil.class).error("No debug rootNode set");
+            log.error("No debug rootNode set");
         }
     }
 
@@ -856,6 +871,36 @@ public class DebugUtil extends AbstractAppState {
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void validateSpatial(Spatial spatial) {
+        spatial.depthFirstTraversal(s -> {
+            SkeletonControl skeletonControl = s.getControl(SkeletonControl.class);
+            if(skeletonControl == null) {
+                return;
+            }
+
+            if(skeletonControl.getSkeleton().getBoneCount() == 0) {
+                log.error("Removing Skeleton. Skeleton must have at least 1 bone. Spatial: {}, with parent: {}", s, spatial);
+                s.removeControl(skeletonControl);
+            } else if(skeletonControl.getSkeleton().getBoneCount() > 256) {
+                log.error("Removing Skeleton. Skeleton must have less than 256 bones. Spatial: {}, with parent: {}", s, spatial);
+                s.removeControl(skeletonControl);
+            }
+        });
+
+        spatial.depthFirstTraversal(s -> {
+            if(!(s instanceof Geometry)) {
+                return;
+            }
+
+            ((Geometry) s).getMaterial().getParams().forEach( param -> {
+                    if(param.getValue().getClass().isArray() && ((Object[])param.getValue()).length == 0) {
+                        log.error("Replacing material for Geometry. Material array param can't be empty. Spatial: {}, with parent: {}", s, spatial);
+                        s.setMaterial(createDebugMaterial((Geometry) s, false));
+                    }
+            });
+        });
     }
 
 

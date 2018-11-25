@@ -36,12 +36,12 @@ public final class SceneUtil {
      * @return dirStore
      */
     @Deprecated
-    public static Vector3f CamCoordsToWorld(InputManager inputManager, Camera cam, Vector3f coordsStore, Vector3f dirStore) {
-        return CamCoordsToWorld(inputManager.getCursorPosition(), cam, coordsStore, dirStore);
+    public static Vector3f camCoordsToWorld(InputManager inputManager, Camera cam, Vector3f coordsStore, Vector3f dirStore) {
+        return camCoordsToWorld(inputManager.getCursorPosition(), cam, coordsStore, dirStore);
     }
 
 
-    public static Vector3f CamCoordsToWorld(Vector2f cursor2d, Camera cam, Vector3f coordsStore, Vector3f dirStore) {
+    public static Vector3f camCoordsToWorld(Vector2f cursor2d, Camera cam, Vector3f coordsStore, Vector3f dirStore) {
         TempVars vars = TempVars.get();
 
 //        Vector2f cursor2d = cursorPos;

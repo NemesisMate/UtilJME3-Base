@@ -6,7 +6,13 @@ package com.nx.util.jme3.base;
  * and open the template in the editor.
  */
 
-import com.jme3.animation.*;
+import com.jme3.animation.AnimControl;
+import com.jme3.animation.Animation;
+import com.jme3.animation.Bone;
+import com.jme3.animation.BoneTrack;
+import com.jme3.animation.Skeleton;
+import com.jme3.animation.SkeletonControl;
+import com.jme3.animation.Track;
 import com.jme3.asset.AssetKey;
 import com.jme3.asset.AssetManager;
 import com.jme3.asset.TextureKey;
@@ -16,7 +22,11 @@ import com.jme3.material.Material;
 import com.jme3.material.MaterialDef;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
-import com.jme3.scene.*;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
 import com.jme3.texture.Texture;
 import com.jme3.util.TempVars;
 import jme3tools.optimize.GeometryBatchFactory;
@@ -25,7 +35,14 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * //TODO: improvement: remove vertexes dups.
@@ -41,9 +58,11 @@ public final class MergeUtil {
     }
 
     public static boolean createSkeletonBuffers(Mesh mesh, byte boneIndex) {
+
         // If the skeleton buffer is null, we create a new one
         if(mesh.getBuffer(VertexBuffer.Type.BoneIndex) == null) {
 
+            //TODO: Use the BufferUtils clone utilities instead of manually copying
             VertexBuffer indexBuffer = mesh.getBuffer(VertexBuffer.Type.Index);
             int bufferComponents = 4;
             int bufferSize = indexBuffer.getNumElements() * bufferComponents;
@@ -60,11 +79,11 @@ public final class MergeUtil {
             mesh.setBuffer(VertexBuffer.Type.BoneIndex, bufferComponents, zeroIndex);
             mesh.setBuffer(VertexBuffer.Type.BoneWeight, bufferComponents, zeroWeight);
 
+//            mesh.setBuffer(VertexBuffer.Type.HWBoneIndex, bufferComponents, zeroIndex);
+//            mesh.setBuffer(VertexBuffer.Type.HWBoneWeight, bufferComponents, zeroWeight);
 
 
-
-
-            //TODO: Use the BufferUtils clone utilities instead of manually copying
+            //TODO: Use the BufferUtils clone utilities instead of manually copying.
             VertexBuffer posBuffer = mesh.getBuffer(VertexBuffer.Type.Position);
 
             bufferComponents = posBuffer.getNumComponents();
@@ -76,9 +95,32 @@ public final class MergeUtil {
             for (int k = 0; k < buffSize; k++) {
                 array[k] = floatBuffer.get(k);
             }
-
             // BindPosePosition, according to it docs, has to have the same format and components as the Position buffer.
             mesh.setBuffer(VertexBuffer.Type.BindPosePosition, bufferComponents, array);
+
+            // Why this doesn't work?
+//            mesh.setBuffer(VertexBuffer.Type.BindPosePosition, bufferComponents, BufferUtils.clone((FloatBuffer) mesh.getBuffer(VertexBuffer.Type.Position).getDataReadOnly()));
+
+
+            posBuffer = mesh.getBuffer(VertexBuffer.Type.Normal);
+
+            bufferComponents = posBuffer.getNumComponents();
+            array = new float[indexBuffer.getNumElements() * bufferComponents];
+
+            floatBuffer = (FloatBuffer) posBuffer.getDataReadOnly();
+            buffSize = bufferComponents * posBuffer.getNumElements();
+
+            for (int k = 0; k < buffSize; k++) {
+                array[k] = floatBuffer.get(k);
+            }
+            // BindPoseNormal, according to it docs, has to have the same format and components as the Normal buffer.
+            mesh.setBuffer(VertexBuffer.Type.BindPoseNormal, bufferComponents, array);
+
+            // Why this doesn't work?
+//            mesh.setBuffer(VertexBuffer.Type.BindPoseNormal, bufferComponents, BufferUtils.clone((FloatBuffer) mesh.getBuffer(VertexBuffer.Type.Normal).getData()));
+
+
+            mesh.setMaxNumWeights(4);
 
             return true;
         }
@@ -88,7 +130,7 @@ public final class MergeUtil {
 
     public static List<Geometry> gatherGeometries(List<Geometry> store, Spatial... spatials) {
         if(store == null) {
-            store = new ArrayList<Geometry>();
+            store = new ArrayList<>();
         }
 
         // Not added to a node to not dettach from their parents and, so, do not mutate the original things.
@@ -258,49 +300,8 @@ public final class MergeUtil {
     public static Spatial mergeSpatialsWithAnimations(AssetManager assetManager, boolean replaceBoneDups, List<Geometry> geometries, Map<Geometry, String> boneLinks, Set<SkeletonControl> skeletonControls, Set<AnimControl> animControls) {
 
         findSkAnimControlsFor(geometries, skeletonControls, animControls);
-//        for(Geometry geometry : geometries) {
-//            Spatial parent = geometry;
-//            while(parent != null) {
-//                SkeletonControl skeletonControl = parent.getControl(SkeletonControl.class);
-//                boolean well = true;
-//
-//                if(skeletonControl != null) {
-//                    well = false;
-//                    skeletonControls.add(skeletonControl);
-//
-//                    // Patch to not updated targets
-//                    if(skeletonControl.getTargets().length == 0) {
-//                        parent.removeControl(skeletonControl);
-//                        parent.addControl(skeletonControl);
-//                        if(skeletonControl.getTargets().length == 0) {
-//                            throw new UnknownError();
-//                        }
-//                    }
-//                }
-//
-//                AnimControl animControl = parent.getControl(AnimControl.class);
-//                if(animControl != null) {
-//                    well = !well;
-//                    animControls.add(animControl);
-//                }
-//
-//                if(!well) {
-//                    LoggerFactory.getLogger(MergeUtil.class).warn("Spatial: {}, has only a SekeletonControl or an AnimControl. This can lead to further problems.");
-//                }
-//
-//                parent = parent.getParent();
-//            }
-//        }
 
         Mesh newMesh = new Mesh();
-
-
-
-//        LoggerFactory.getLogger(MergeUtil.class).debug("{}", geometries);
-//        for(Geometry g : geometries) {
-//            LoggerFactory.getLogger(MergeUtil.class).error("Geom: {}, Mode: {}.", g, g.getMesh().getMode());
-//        }
-
 
         //TODO: Allow this decision to the tool user.
         if(!skeletonControls.isEmpty()) {
@@ -318,8 +319,8 @@ public final class MergeUtil {
             boneCount += skeletonControl.getSkeleton().getBoneCount();
         }
 
-        Map<Bone, Bone> bonesAssocs = new HashMap<Bone, Bone>((int) (boneCount / 0.75f) + 1, 0.75f);
-        Map<Bone, Integer> newSkeletonBoneIndexes = new HashMap<Bone, Integer>();
+        Map<Bone, Bone> bonesAssocs = new HashMap<>((int) (boneCount / 0.75f) + 1, 0.75f);
+        Map<Bone, Integer> newSkeletonBoneIndexes = new HashMap<>();
 
         //TODO: Can be done more efficiently with an int[] array containing the bone index redefinition based on the boneOffset when looping over them. The conterpart is it is less robust.
 
@@ -590,10 +591,6 @@ public final class MergeUtil {
             geometryMeshAssoc.put(geometry.getMesh(), geometry);
         }
 
-
-
-
-
         int i = 0;
         for(SkeletonControl skeletonControl : skeletonControls) {
             Skeleton skeleton = skeletonControl.getSkeleton();
@@ -606,6 +603,7 @@ public final class MergeUtil {
                 skeletonOffsets[i] = skeletonSpatial.getWorldTranslation();
             } else {
                 LoggerFactory.getLogger(MergeUtil.class).trace("Merged skeleton control without spatial: {}", skeletonControl);
+                skeletonOffsets[i] = Vector3f.ZERO;
             }
 
             i++;
@@ -768,7 +766,7 @@ public final class MergeUtil {
         Bone[] bones = new Bone[boneCount];
 
 //        bonesAssocs = new HashMap<Bone, Bone>((int) (boneCount / 0.75f) + 1, 0.75f);
-        Map<String, Map<String, Bone>> rootNameAssocs = new HashMap<String, Map<String, Bone>>();
+        Map<String, Map<String, Bone>> rootNameAssocs = new HashMap<>();
 
 //        List<Map<Bone, Integer>> skeletonBoneIndexes; // Index on the final skeleton for a bone in the original skeleton.
 //        newSkeletonBoneIndexes = new HashMap<>(); // Not needed to make a list if using Bones as keys (as they are different for every skeleton, not as the bone names)
@@ -782,7 +780,7 @@ public final class MergeUtil {
 
                 Map<String, Bone> nameBoneAssocs = rootNameAssocs.get(bone.getName());
                 if(nameBoneAssocs == null) {
-                    nameBoneAssocs = new HashMap<String, Bone>();
+                    nameBoneAssocs = new HashMap<>();
                     rootNameAssocs.put(bone.getName(), nameBoneAssocs);
                 }
 

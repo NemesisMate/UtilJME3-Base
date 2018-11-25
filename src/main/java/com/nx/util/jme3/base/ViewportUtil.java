@@ -1,8 +1,21 @@
 package com.nx.util.jme3.base;
 
-public final class CameraUtil {
+import com.jme3.renderer.ViewPort;
+import com.jme3.scene.Spatial;
 
-    private CameraUtil() { }
+public final class ViewportUtil {
+
+    private ViewportUtil() { }
+
+    public static boolean viewportContainsSpatial(ViewPort viewport, Spatial spatial) {
+        for(Spatial viewportSpatial : viewport.getScenes().getArray()) {
+            if(viewportSpatial == spatial) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 //    public static Vector3f getFocusPosition(Camera cam, Spatial spatial, Vector3f store) {
 //
